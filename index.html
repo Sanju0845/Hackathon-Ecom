@@ -364,9 +364,35 @@
         * {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
+
+        /* Version badge */
+        .version-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px var(--shadow);
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .version-badge {
+                bottom: 10px;
+                right: 10px;
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="version-badge">v1.2</div>
     <div class="theme-switch" onclick="toggleTheme()">
         <span class="material-icons-round">light_mode</span>
         <div class="switch-track">
