@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import socket
 import traceback
+import base64
 
 app = Flask(__name__)
 # Configure CORS to allow requests from any origin
@@ -35,21 +36,28 @@ def root():
 def serve_static(path):
     return send_from_directory('.', path)
 
-# Data storage - In-memory for Vercel, File-based for local
+# Data storage - Environment variables for Vercel, File-based for local
 IS_VERCEL = os.environ.get('VERCEL', False)
 
-# Initialize empty data store
-store = {
-    'users': [],
-    'products': [],
-    'orders': [],
-    'cart': {}
-}
-
 def load_data(filename):
-    """Load data from either memory store or file system"""
+    """Load data from either environment variables or file system"""
     if IS_VERCEL:
-        return store.get(filename.replace('.json', ''), [] if filename != 'cart.json' else {})
+        # Try to get data from environment variable
+        env_key = f"STORE_{filename.replace('.json', '').upper()}"
+        data_str = os.environ.get(env_key)
+        
+        if data_str:
+            try:
+                # Decode base64 and parse JSON
+                decoded_data = base64.b64decode(data_str).decode('utf-8')
+                return json.loads(decoded_data)
+            except:
+                print(f"Error loading data from env {env_key}")
+                pass
+        
+        # Return empty default if no data found
+        return [] if filename != 'cart.json' else {}
+    
     try:
         with open(filename, 'r') as f:
             return json.load(f)
@@ -59,15 +67,23 @@ def load_data(filename):
         return []
 
 def save_data(filename, data):
-    """Save data to either memory store or file system"""
-    key = filename.replace('.json', '')
-    store[key] = data  # Always update in-memory store
-    
-    if not IS_VERCEL:  # Only save to file if not on Vercel
+    """Save data to either environment variables or file system"""
+    if IS_VERCEL:
+        # Convert data to base64 string
+        json_str = json.dumps(data)
+        base64_str = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+        
+        # Set environment variable
+        env_key = f"STORE_{filename.replace('.json', '').upper()}"
+        os.environ[env_key] = base64_str
+        
+        # Print for debugging
+        print(f"Saved data to {env_key}: {json_str[:100]}...")
+    else:
         with open(filename, 'w') as f:
             json.dump(data, f, indent=2)
 
-# Initialize JSON files for local development and load initial data
+# Initialize data store
 def init_json_files():
     files = ['users.json', 'products.json', 'orders.json', 'cart.json']
     for file in files:
@@ -77,9 +93,6 @@ def init_json_files():
                     json.dump({}, f)
                 else:
                     json.dump([], f)
-        # Load initial data into memory store
-        key = file.replace('.json', '')
-        store[key] = load_data(file)
 
 init_json_files()
 
@@ -148,11 +161,15 @@ def login():
 def get_all_products():
     try:
         products = load_data('products.json')
+        # Print for debugging
+        print(f"Loaded products: {json.dumps(products)[:100]}...")
         if not products:
-            return jsonify({'error': 'No products available'}), 404
+            return jsonify([])  # Return empty list instead of error
         return jsonify(products)
     except Exception as e:
-        return jsonify({'error': 'Failed to connect with server'}), 500
+        print(f"Error loading products: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({'error': 'Failed to load products', 'message': str(e)}), 500
 
 @app.route('/api/products/<int:product_id>', methods=['GET'])
 def get_single_product(product_id):
