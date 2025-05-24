@@ -22,22 +22,20 @@ async function loadProducts() {
         
         const response = await fetch('/api/products');
         if (!response.ok) {
-            const error = await response.json();
-            if (response.status === 404) {
-                productsGrid.innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                        <span class="material-icons-round" style="font-size: 3rem; margin-bottom: 1rem;">inventory</span>
-                        <p>No products available</p>
-                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Please check back later or contact the administrator.</p>
-                    </div>
-                `;
-            } else {
-                throw new Error(error.error || 'Failed to load products');
-            }
-            return;
+            throw new Error('Failed to load products');
         }
-        products = await response.json();
+        
+        const data = await response.json();
+        
+        // Check if response is an error object
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Ensure products is an array
+        products = Array.isArray(data) ? data : [];
         filteredProducts = [...products];
+        
         if (products.length === 0) {
             productsGrid.innerHTML = `
                 <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
@@ -48,6 +46,7 @@ async function loadProducts() {
             `;
             return;
         }
+        
         displayProducts(filteredProducts);
         updateCartCount();
     } catch (error) {
@@ -55,8 +54,8 @@ async function loadProducts() {
         productsGrid.innerHTML = `
             <div style="text-align: center; padding: 2rem; color: var(--danger);">
                 <span class="material-icons-round" style="font-size: 3rem; margin-bottom: 1rem;">error_outline</span>
-                <p>Failed to connect with server</p>
-                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Please check your internet connection and try again.</p>
+                <p>Failed to load products: ${error.message}</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Please try again later.</p>
                 <button onclick="loadProducts()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
                     <span class="material-icons-round" style="font-size: 1rem; margin-right: 0.5rem;">refresh</span>
                     Retry
@@ -404,31 +403,34 @@ function displayProducts(productsToShow) {
     const productsHTML = productsToShow.map(product => `
         <div class="product-card" onclick="openProductDetails(${JSON.stringify(product).replace(/"/g, '&quot;')})">
             <div class="product-image">
-                <img src="${product.image || 'https://via.placeholder.com/300'}" alt="${product.name}">
+                <img src="${product.image || 'https://via.placeholder.com/300'}" alt="${product.name}" 
+                     onerror="this.src='https://via.placeholder.com/300'">
             </div>
             <div class="product-info">
-                <div class="product-header">
-                    <div class="product-name">${product.name}</div>
-                    <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-description">${product.description}</p>
+                <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
+                <div class="product-stock ${product.stock < 5 ? 'low-stock' : ''}">
+                    ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                 </div>
-                <div class="product-description">${product.description || 'No description available'}</div>
-                <div class="product-stock ${product.stock < 10 ? 'low' : ''}">
-                    <span class="material-icons-round">${product.stock > 0 ? 'inventory_2' : 'inventory'}</span>
-                    ${product.stock > 0 ? (product.stock < 10 ? `Only ${product.stock} left` : 'In Stock') : 'Out of Stock'}
-                </div>
-                <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('${product.id}', -1, event)">
-                        <span class="material-icons-round">remove</span>
+                <div class="product-actions">
+                    <div class="quantity-controls">
+                        <button onclick="updateQuantity('${product.id}', -1, event)" 
+                                class="quantity-btn" ${product.stock === 0 ? 'disabled' : ''}>
+                            <span class="material-icons-round">remove</span>
+                        </button>
+                        <span id="quantity-${product.id}" class="quantity">1</span>
+                        <button onclick="updateQuantity('${product.id}', 1, event)" 
+                                class="quantity-btn" ${product.stock === 0 ? 'disabled' : ''}>
+                            <span class="material-icons-round">add</span>
+                        </button>
+                    </div>
+                    <button onclick="addToCart('${product.id}', event)" 
+                            class="add-to-cart" ${product.stock === 0 ? 'disabled' : ''}>
+                        <span class="material-icons-round">add_shopping_cart</span>
+                        Add to Cart
                     </button>
-                    <span class="quantity" id="quantity-${product.id}">1</span>
-                    <button class="quantity-btn" onclick="updateQuantity('${product.id}', 1, event)">
-                        <span class="material-icons-round">add</span>
-                    </button>
                 </div>
-                <button class="add-to-cart" onclick="addToCart('${product.id}', event)">
-                    <span class="material-icons-round">add_shopping_cart</span>
-                    Add to Cart
-                </button>
             </div>
         </div>
     `).join('');
