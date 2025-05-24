@@ -160,11 +160,59 @@ def login():
 @app.route('/api/products', methods=['GET'])
 def get_all_products():
     try:
+        print("Loading products...")
         products = load_data('products.json')
-        # Print for debugging
-        print(f"Loaded products: {json.dumps(products)[:100]}...")
-        if not products:
-            return jsonify([])  # Return empty list instead of error
+        print(f"Products loaded: {json.dumps(products, indent=2)}")
+        
+        # Ensure products is always an array
+        if not isinstance(products, list):
+            print("Products is not a list, initializing empty array")
+            products = []
+        
+        # Initialize products with some default items if empty
+        if len(products) == 0:
+            print("No products found, checking admin products...")
+            admin_products = load_data('admin_products.json')
+            if admin_products and len(admin_products) > 0:
+                products = admin_products
+                print(f"Loaded {len(products)} products from admin_products.json")
+            elif IS_VERCEL:
+                # Load from environment variable directly
+                env_products = os.environ.get('VERCEL_PRODUCTS')
+                if env_products:
+                    try:
+                        products = json.loads(base64.b64decode(env_products).decode('utf-8'))
+                        print(f"Loaded {len(products)} products from VERCEL_PRODUCTS env")
+                    except Exception as e:
+                        print(f"Error loading from VERCEL_PRODUCTS: {str(e)}")
+                
+                # If still no products, use defaults
+                if len(products) == 0:
+                    products = [
+                        {
+                            "id": 1,
+                            "name": "Sample Product 1",
+                            "description": "This is a sample product",
+                            "price": 29.99,
+                            "stock": 10,
+                            "image": "https://via.placeholder.com/300"
+                        },
+                        {
+                            "id": 2,
+                            "name": "Sample Product 2",
+                            "description": "Another sample product",
+                            "price": 39.99,
+                            "stock": 15,
+                            "image": "https://via.placeholder.com/300"
+                        }
+                    ]
+                    print("Using default products")
+            
+            # Save the products
+            save_data('products.json', products)
+            print(f"Saved {len(products)} products")
+        
+        print(f"Returning {len(products)} products")
         return jsonify(products)
     except Exception as e:
         print(f"Error loading products: {str(e)}")
@@ -289,18 +337,49 @@ def admin_products():
     
     products.append(new_product)
     save_data('products.json', products)
+    
+    # Also save to a separate admin products file for persistence
+    admin_products = load_data('admin_products.json')
+    if not isinstance(admin_products, list):
+        admin_products = []
+    admin_products.append(new_product)
+    save_data('admin_products.json', admin_products)
+    
+    # Save directly to Vercel environment
+    if IS_VERCEL:
+        try:
+            json_str = json.dumps(products)
+            base64_str = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+            os.environ['VERCEL_PRODUCTS'] = base64_str
+            print("Saved products to VERCEL_PRODUCTS env")
+        except Exception as e:
+            print(f"Error saving to VERCEL_PRODUCTS: {str(e)}")
+    
     return jsonify(new_product), 201
 
 @app.route('/api/admin/products/<int:product_id>', methods=['PUT', 'DELETE'])
 def admin_manage_product(product_id):
     products = load_data('products.json')
+    admin_products = load_data('admin_products.json')
     
     if request.method == 'DELETE':
         products = [p for p in products if p['id'] != product_id]
+        admin_products = [p for p in admin_products if p['id'] != product_id]
         save_data('products.json', products)
+        save_data('admin_products.json', admin_products)
+        
+        if IS_VERCEL:
+            try:
+                json_str = json.dumps(products)
+                base64_str = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+                os.environ['VERCEL_PRODUCTS'] = base64_str
+            except Exception as e:
+                print(f"Error saving to VERCEL_PRODUCTS: {str(e)}")
+        
         return '', 204
     
     data = request.json
+    updated = False
     for i, product in enumerate(products):
         if product['id'] == product_id:
             products[i].update({
@@ -310,14 +389,59 @@ def admin_manage_product(product_id):
                 'stock': int(data['stock']),
                 'image': data['image']
             })
-            save_data('products.json', products)
-            return jsonify(products[i])
+            updated = True
+            break
+    
+    if updated:
+        save_data('products.json', products)
+        
+        # Update admin products as well
+        for i, product in enumerate(admin_products):
+            if product['id'] == product_id:
+                admin_products[i].update({
+                    'name': data['name'],
+                    'description': data['description'],
+                    'price': float(data['price']),
+                    'stock': int(data['stock']),
+                    'image': data['image']
+                })
+                break
+        save_data('admin_products.json', admin_products)
+        
+        if IS_VERCEL:
+            try:
+                json_str = json.dumps(products)
+                base64_str = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+                os.environ['VERCEL_PRODUCTS'] = base64_str
+            except Exception as e:
+                print(f"Error saving to VERCEL_PRODUCTS: {str(e)}")
+        
+        return jsonify(products[i])
     
     return jsonify({'error': 'Product not found'}), 404
 
 @app.route('/api/admin/orders', methods=['GET'])
 def admin_orders():
     return jsonify(load_data('orders.json'))
+
+# Add a debug endpoint to check environment variables
+@app.route('/api/debug/env', methods=['GET'])
+def debug_env():
+    try:
+        products = load_data('products.json')
+        admin_products = load_data('admin_products.json')
+        env_vars = {
+            'VERCEL': os.environ.get('VERCEL', 'not set'),
+            'STORE_PRODUCTS': bool(os.environ.get('STORE_PRODUCTS', False)),
+            'VERCEL_PRODUCTS': bool(os.environ.get('VERCEL_PRODUCTS', False)),
+            'products_count': len(products),
+            'admin_products_count': len(admin_products) if admin_products else 0,
+            'all_env_keys': [k for k in os.environ.keys() if k.startswith('STORE_') or k.startswith('VERCEL_')]
+        }
+        print(f"Debug env vars: {env_vars}")
+        return jsonify(env_vars)
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
     print("\nAvailable IP addresses to access the store:")
