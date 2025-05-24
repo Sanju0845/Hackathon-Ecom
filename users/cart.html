@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-sidebar.active {
+            right: 0;
+        }
+
+        .cart-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-header h2 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-details h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .item-price {
+            color: #2196F3;
+            font-weight: 500;
+        }
+
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .quantity-btn {
+            background: #f5f5f5;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .remove-item {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .cart-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+            background: white;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .checkout-btn:hover {
+            background: #1976D2;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .cart-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" onclick="closeCart()">×</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <script>
+        function openCart() {
+            document.getElementById('cartSidebar').classList.add('active');
+            document.getElementById('cartOverlay').classList.add('active');
+        }
+
+        function closeCart() {
+            document.getElementById('cartSidebar').classList.remove('active');
+            document.getElementById('cartOverlay').classList.remove('active');
+        }
+
+        function updateCart() {
+            const cartItems = JSON.parse(localStorage.getItem('cart') || '{}');
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            if (!cartItems || Object.keys(cartItems).length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="empty-cart">
+                        <p>Your cart is empty</p>
+                    </div>
+                `;
+                cartTotal.textContent = '$0.00';
+                return;
+            }
+
+            // Fetch products first
+            fetch('/api/products')
+                .then(response => response.json())
+                .then(products => {
+                    let total = 0;
+                    const cartHTML = Object.entries(cartItems).map(([productId, quantity]) => {
+                        const product = products.find(p => p.id && p.id.toString() === productId.toString());
+                        if (!product) return '';
+
+                        const itemTotal = parseFloat(product.price) * parseInt(quantity);
+                        total += itemTotal;
+
+                        return `
+                            <div class="cart-item">
+                                <img src="${product.image || 'https://via.placeholder.com/300'}" alt="${product.name}">
+                                <div class="item-details">
+                                    <h3>${product.name}</h3>
+                                    <div class="item-price">$${itemTotal.toFixed(2)}</div>
+                                    <div class="item-quantity">
+                                        <button class="quantity-btn" onclick="updateQuantity('${productId}', ${parseInt(quantity) - 1})">-</button>
+                                        <span>${quantity}</span>
+                                        <button class="quantity-btn" onclick="updateQuantity('${productId}', ${parseInt(quantity) + 1})">+</button>
+                                    </div>
+                                    <button class="remove-item" onclick="removeFromCart('${productId}')">Remove</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    cartItemsContainer.innerHTML = cartHTML || `
+                        <div class="empty-cart">
+                            <p>Your cart is empty</p>
+                        </div>
+                    `;
+                    cartTotal.textContent = `$${total.toFixed(2)}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                    cartItemsContainer.innerHTML = `
+                        <div class="empty-cart">
+                            <p>Error loading cart items</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function updateQuantity(productId, newQuantity) {
+            if (newQuantity < 1) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+            cart[productId] = newQuantity;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCart();
+        }
+
+        function removeFromCart(productId) {
+            let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+            delete cart[productId];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCart();
+        }
+
+        function checkout() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+            if (!cart || Object.keys(cart).length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            window.location.href = 'checkout.html';
+        }
+
+        // Close cart when clicking overlay
+        document.getElementById('cartOverlay').addEventListener('click', closeCart);
+
+        // Update cart when opened
+        document.addEventListener('DOMContentLoaded', updateCart);
+    </script>
+</body>
+</html> 

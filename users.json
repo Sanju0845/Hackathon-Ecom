@@ -1,0 +1,27 @@
+[
+  {
+    "name": "qwertyuiop",
+    "email": "yoyo939596@gmail.com",
+    "password": "1234567890"
+  },
+  {
+    "name": "Admin User",
+    "email": "admin@gmail.com",
+    "password": "admin",
+    "is_admin": true,
+    "id": "3"
+  },
+  {
+    "name": "1",
+    "email": "1@gmail.com",
+    "password": "123456",
+    "id": "2"
+  },
+  {
+    "name": "tf",
+    "email": "12@gmail.com",
+    "password": "123456",
+    "is_admin": false,
+    "id": "1"
+  }
+]

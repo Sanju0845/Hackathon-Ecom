@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Our Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {margin: 0; padding: 0; box-sizing: border-box;}
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            background: #fff;
+            display: flex;
+            overflow-x: hidden;
+        }
+        .auth-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 48px;
+            justify-content: center;
+            position: relative;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .illustration {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45%;
+            background: #fff4e6;
+            padding: 48px;
+        }
+        .illustration svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .logo {
+            position: absolute;
+            top: 48px;
+            left: 48px;
+            font-weight: 700;
+            font-size: 24px;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+        h1 {
+            font-size: 32px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            color: #1a1a1a;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .input-field {
+            position: relative;
+        }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            transition: all 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .links {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        .links a {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        @media (max-width: 1024px) {
+            .illustration {
+                display: none;
+            }
+            .auth-container {
+                padding: 32px 24px;
+            }
+            .logo {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <a href="/" class="logo">STORE</a>
+        <div class="auth-card">
+            <h1>Create account</h1>
+            <p class="subtitle">Join us and start shopping today</p>
+            <div id="error-message" class="error"></div>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="name">Full name</label>
+                    <div class="input-field">
+                        <input type="text" id="name" required placeholder="Enter your full name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <div class="input-field">
+                        <input type="email" id="email" required placeholder="Enter your email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-field">
+                        <input type="password" id="password" required placeholder="Create a password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Create your account</button>
+                <div class="links">
+                    Already have an account? <a href="login.html">Sign in</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="illustration">
+        <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="400" fill="#FFF4E6"/>
+            <circle cx="200" cy="200" r="160" fill="#FFE4CC"/>
+            <circle cx="200" cy="200" r="120" fill="#FFD4B3"/>
+            <circle cx="200" cy="200" r="80" fill="#FFC49A"/>
+        </svg>
+    </div>
+
+    <script>
+        async function handleSignup(event) {
+            event.preventDefault();
+            const errorMessage = document.getElementById('error-message');
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    window.location.href = 'login.html';
+                } else {
+                    errorMessage.textContent = data.error || 'Error creating account';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = 'Network error. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html> 

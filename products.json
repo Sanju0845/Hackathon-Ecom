@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "T-shirt with Tape Details",
+    "description": "acsdc",
+    "price": 199.68,
+    "stock": 898,
+    "image": "https://images-na.ssl-images-amazon.com/images/I/61D8YGwvO2L._SLDPMOBCAROUSELAUTOCROP288221_MCnd_AC_SR462,693_.jpg"
+  },
+  {
+    "id": 2,
+    "name": "pen",
+    "description": "sdbvd",
+    "price": 400.0,
+    "stock": 396,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrvBKyYFniK0gqCJTQjc5ccnHCBOEklSWXlw&s"
+  }
+]

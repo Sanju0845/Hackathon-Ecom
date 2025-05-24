@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Our Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+    <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary-light: #fff;
+            --bg-secondary-light: #f8f8f8;
+            --text-primary-light: #1a1a1a;
+            --text-secondary-light: #666;
+            --accent-light: #f4f7ff;
+            --accent-darker-light: #C5D1F8;
+            --border-light: #e5e7eb;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+
+            /* Dark theme variables */
+            --bg-primary-dark: #1a1a1a;
+            --bg-secondary-dark: #2d2d2d;
+            --text-primary-dark: #ffffff;
+            --text-secondary-dark: #a0a0a0;
+            --accent-dark: #2b3245;
+            --accent-darker-dark: #3d4663;
+            --border-dark: #404040;
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: var(--bg-primary-light);
+            --bg-secondary: var(--bg-secondary-light);
+            --text-primary: var(--text-primary-light);
+            --text-secondary: var(--text-secondary-light);
+            --accent: var(--accent-light);
+            --accent-darker: var(--accent-darker-light);
+            --border: var(--border-light);
+            --shadow: var(--shadow-light);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: var(--bg-primary-dark);
+            --bg-secondary: var(--bg-secondary-dark);
+            --text-primary: var(--text-primary-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --accent: var(--accent-dark);
+            --accent-darker: var(--accent-darker-dark);
+            --border: var(--border-dark);
+            --shadow: var(--shadow-dark);
+        }
+
+        * {margin: 0; padding: 0; box-sizing: border-box;}
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .split-screen {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            height: 100vh;
+        }
+        .left {
+            background: var(--bg-secondary);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .right {
+            background: var(--bg-primary);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+        .welcome-text {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+        }
+        .brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 48px;
+            letter-spacing: -0.5px;
+        }
+        h1 {
+            font-size: 72px;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            font-weight: 800;
+            letter-spacing: -2px;
+        }
+        h1 span {
+            display: block;
+            background: linear-gradient(45deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            line-height: 1.6;
+            font-weight: 400;
+            max-width: 600px;
+        }
+        .shape {
+            position: absolute;
+            background: #f4f7ff;
+            border-radius: 50%;
+            z-index: 0;
+            transition: all 0.5s ease;
+        }
+        .shape-1 {
+            width: 500px;
+            height: 500px;
+            top: -200px;
+            left: -200px;
+        }
+        .shape-2 {
+            width: 300px;
+            height: 300px;
+            bottom: -100px;
+            right: -100px;
+            background: #fff4e6;
+        }
+        .cta-section {
+            position: relative;
+            z-index: 1;
+            max-width: 320px;
+        }
+        .cta-text {
+            font-size: 28px;
+            color: var(--text-primary);
+            margin-bottom: 32px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 18px 32px;
+            margin-bottom: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s ease;
+        }
+        .btn:hover::after {
+            left: 100%;
+        }
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+        .btn-secondary {
+            background: var(--accent);
+            color: var(--text-primary);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+        .btn span {
+            margin-left: 8px;
+            font-size: 20px;
+        }
+        .features {
+            display: flex;
+            gap: 24px;
+            margin-top: 48px;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .feature .material-icons-round {
+            color: var(--text-primary);
+            font-size: 20px;
+        }
+        .store-preview {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+        .floating-product {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            background: var(--bg-primary);
+            box-shadow: 0 8px 32px var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateZ(0);
+        }
+        .floating-product img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .floating-product .price {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        .floating-product:hover {
+            transform: translateZ(20px) scale(1.1);
+            box-shadow: 0 12px 48px var(--shadow);
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s;
+        }
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--text-primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: transform 0.2s;
+            opacity: 0.5;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateZ(0); }
+            50% { transform: translateY(-20px) translateZ(20px); }
+        }
+        @keyframes spin {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+        .store-badge {
+            position: absolute;
+            padding: 12px 24px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 16px var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: float 3s ease-in-out infinite;
+        }
+        .store-badge .material-icons-round {
+            font-size: 18px;
+        }
+        @media (max-width: 1024px) {
+            .split-screen {
+                grid-template-columns: 1fr;
+            }
+            .right {
+                display: none;
+            }
+            .left {
+                padding: 40px 24px;
+            }
+            h1 {
+                font-size: 48px;
+            }
+            .subtitle {
+                font-size: 18px;
+            }
+            .features {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .theme-switch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+        .theme-switch .material-icons-round {
+            font-size: 20px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        .theme-switch .switch-track {
+            width: 40px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .theme-switch .switch-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+        [data-theme="dark"] .switch-thumb {
+            transform: translateX(20px);
+        }
+        /* Dark mode transitions */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch" onclick="toggleTheme()">
+        <span class="material-icons-round">light_mode</span>
+        <div class="switch-track">
+            <div class="switch-thumb"></div>
+        </div>
+        <span class="material-icons-round">dark_mode</span>
+    </div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    <div class="split-screen">
+        <div class="left">
+            <div class="shape shape-2"></div>
+            <div class="welcome-text">
+                <div class="brand">MY STORE</div>
+                <h1>Discover Your <span>Perfect Style</span></h1>
+                <p class="subtitle">Welcome to our curated collection of premium products. Experience shopping reimagined with personalized recommendations and seamless checkout.</p>
+                <div class="cta-section">
+                    <a href="auth/login.html" class="btn btn-primary">
+                        Sign In
+                        <span class="material-icons-round">arrow_forward</span>
+                    </a>
+                    <a href="auth/signup.html" class="btn btn-secondary">
+                        Create Account
+                        <span class="material-icons-round">person_add</span>
+                    </a>
+                </div>
+                <div class="features">
+                    <div class="feature">
+                        <span class="material-icons-round">verified</span>
+                        Premium Quality
+                    </div>
+                    <div class="feature">
+                        <span class="material-icons-round">local_shipping</span>
+                        Fast Delivery
+                    </div>
+                    <div class="feature">
+                        <span class="material-icons-round">support_agent</span>
+                        24/7 Support
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right">
+            <div class="store-preview">
+                <div class="floating-product" style="top: 20%; left: 20%;">
+                    <img src="https://via.placeholder.com/300/1a1a1a/ffffff?text=Premium" alt="Product">
+                    <span class="price">$299.99</span>
+                </div>
+                <div class="floating-product" style="top: 60%; left: 70%;">
+                    <img src="https://via.placeholder.com/300/f4f7ff/1a1a1a?text=New" alt="Product">
+                    <span class="price">$199.99</span>
+                </div>
+                <div class="floating-product" style="top: 40%; left: 50%;">
+                    <img src="https://via.placeholder.com/300/95A8E8/ffffff?text=Sale" alt="Product">
+                    <span class="price">$149.99</span>
+                </div>
+                <div class="store-badge" style="top: 15%; right: 15%;">
+                    <span class="material-icons-round">star</span>
+                    Premium Quality
+                </div>
+                <div class="store-badge" style="bottom: 20%; left: 10%;">
+                    <span class="material-icons-round">local_shipping</span>
+                    Fast Delivery
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Custom cursor movement
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            cursorDot.style.transform = `translate(${posX - 4}px, ${posY - 4}px)`;
+            cursorOutline.style.transform = `translate(${posX - 20}px, ${posY - 20}px)`;
+        });
+
+        // Parallax effect for floating products
+        document.addEventListener('mousemove', (e) => {
+            const products = document.querySelectorAll('.floating-product');
+            const badges = document.querySelectorAll('.store-badge');
+            
+            const moveX = (e.clientX - window.innerWidth / 2) / 20;
+            const moveY = (e.clientY - window.innerHeight / 2) / 20;
+
+            products.forEach(product => {
+                const speed = Math.random() * 0.5 + 0.5;
+                product.style.transform = `translate3d(${moveX * speed}px, ${moveY * speed}px, 50px)`;
+            });
+
+            badges.forEach(badge => {
+                const speed = Math.random() * 0.3 + 0.3;
+                badge.style.transform = `translate3d(${moveX * speed}px, ${moveY * speed}px, 20px)`;
+            });
+        });
+
+        // Add hover effect to floating products
+        const products = document.querySelectorAll('.floating-product');
+        products.forEach(product => {
+            product.addEventListener('mouseenter', () => {
+                cursorOutline.style.transform = 'scale(1.5)';
+                cursorOutline.style.opacity = '0.2';
+            });
+
+            product.addEventListener('mouseleave', () => {
+                cursorOutline.style.transform = 'scale(1)';
+                cursorOutline.style.opacity = '0.5';
+            });
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            
+            // Save theme preference
+            localStorage.setItem('theme', newTheme);
+
+            // Update floating products' appearance
+            updateFloatingProducts();
+        }
+
+        function updateFloatingProducts() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const products = document.querySelectorAll('.floating-product');
+            
+            products.forEach(product => {
+                if (theme === 'dark') {
+                    product.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5)';
+                } else {
+                    product.style.boxShadow = '0 8px 32px rgba(0,0,0,0.1)';
+                }
+            });
+        }
+
+        // Initialize theme from localStorage
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateFloatingProducts();
+        }
+
+        // Call initializeTheme when the page loads
+        document.addEventListener('DOMContentLoaded', initializeTheme);
+    </script>
+</body>
+</html> 

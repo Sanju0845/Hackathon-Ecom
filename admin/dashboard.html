@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Our Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Google Sans', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            background: #f0f0f0;
+        }
+
+        .nav-link.active {
+            background: #e3f2fd;
+            color: #1976D2;
+        }
+
+        .nav-link i {
+            vertical-align: middle;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .logout-btn {
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            padding: 0.75rem 1rem;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logout-btn:hover {
+            color: #c82333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        .header-actions {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 140px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            color: #1a1a1a;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .add-product-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+            min-height: 44px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .add-product-btn:hover {
+            background: #1976D2;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            position: relative;
+            padding-top: 75%;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 1.25rem;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .product-title {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .product-name {
+            color: #1a1a1a;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-price {
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .product-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .product-stock {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stock-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .stock-value {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .stock-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stock-status.high {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .stock-status.medium {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .stock-status.low {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem;
+            }
+
+            .nav-left {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-menu {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-link {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .logout-btn {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .container {
+                margin: 0.5rem auto;
+            }
+
+            .header-actions {
+                flex-direction: column;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
+
+            .stat-card {
+                width: 100%;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .product-card {
+                margin-bottom: 0.5rem;
+            }
+
+            .product-image {
+                padding-top: 100%;
+            }
+
+            .product-info {
+                padding: 0.75rem;
+            }
+
+            .product-name {
+                font-size: 0.9rem;
+            }
+
+            .product-description {
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .product-stock {
+                padding: 0.25rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+
+            .card-actions button {
+                width: 100%;
+                min-height: 44px;
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) {
+            .nav-link,
+            .logout-btn,
+            .add-product-btn,
+            .card-actions button {
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .product-card:hover {
+                transform: none;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+
+            input[type="text"],
+            input[type="number"],
+            textarea {
+                font-size: 16px;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-modal:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group .hint {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            border: 2px dashed var(--border-color);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview.empty {
+            background: var(--bg-secondary);
+        }
+
+        .image-preview.empty::after {
+            content: 'Preview';
+            color: var(--text-secondary);
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            min-height: 44px;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                max-height: 85vh;
+            }
+
+            .modal-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="nav-left">
+            <h1>Admin Dashboard</h1>
+            <nav class="nav-menu">
+                <a href="/admin/dashboard.html" class="nav-link active">
+                    <i class="material-icons">dashboard</i>
+                    Dashboard
+                </a>
+                <a href="/admin/orders.html" class="nav-link">
+                    <i class="material-icons">shopping_cart</i>
+                    Orders
+                </a>
+            </nav>
+        </div>
+        <a href="#" class="logout-btn" onclick="handleLogout()">
+            <span class="material-icons">logout</span>
+            Logout
+        </a>
+    </div>
+
+    <div class="container">
+        <div class="header-actions">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Products</div>
+                    <div class="stat-value" id="totalProducts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Low Stock Items</div>
+                    <div class="stat-value" id="lowStockItems">0</div>
+                </div>
+            </div>
+            <button class="add-product-btn" onclick="openModal()">
+                <span class="material-icons">add</span>
+                Add Product
+            </button>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be loaded here dynamically -->
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Edit Product</h2>
+                <button class="close-modal" onclick="closeModal()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    <div class="form-group">
+                        <label for="name">Product Name</label>
+                        <input type="text" id="name" required>
+                        <div class="hint">Enter a descriptive name for the product</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" required></textarea>
+                        <div class="hint">Provide detailed information about the product</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price ($)</label>
+                        <input type="number" id="price" step="0.01" min="0" required>
+                        <div class="hint">Set the price in USD</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="stock">Stock Quantity</label>
+                        <input type="number" id="stock" min="0" required>
+                        <div class="hint">Enter the available quantity</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="image">Image URL</label>
+                        <input type="url" id="image" required onchange="updateImagePreview(this)">
+                        <div class="hint">Provide a direct link to the product image</div>
+                        <div class="image-preview empty" id="imagePreview"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProduct()">
+                    <span class="material-icons">save</span>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is admin
+        window.addEventListener('load', () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.isAdmin) {
+                window.location.href = '../auth/login.html';
+            }
+            loadProducts();
+        });
+
+        function handleLogout() {
+            // Clear all user data from localStorage
+            localStorage.removeItem('user');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('isAdmin');
+            
+            // Redirect to login page
+            window.location.href = '../auth/login.html';
+        }
+
+        function loadProducts() {
+            fetch('http://127.0.0.1:5000/api/admin/products')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load products');
+                    }
+                    return response.json();
+                })
+                .then(products => {
+                    displayProducts(products);
+                    updateStats(products);
+                })
+                .catch(error => {
+                    console.error('Error loading products:', error);
+                    document.getElementById('productsGrid').innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <p style="color: #dc3545;">Failed to load products. Please try again.</p>
+                            <p style="color: #666; font-size: 0.9rem;">${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function updateStats(products) {
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('lowStockItems').textContent = products.filter(p => (p.stock || 0) < 10).length;
+        }
+
+        function displayProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            
+            if (!products || products.length === 0) {
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <h2>No products available</h2>
+                        <p>Click the Add Product button to add your first product!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = products.map(product => {
+                const productId = product.id || product._id; // Handle both id formats
+                const stockValue = product.stock || 0;
+                return `
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-header">
+                                <div class="product-title">
+                                    <h3 class="product-name">${product.name}</h3>
+                                    <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
+                                </div>
+                            </div>
+                            <p class="product-description">${product.description}</p>
+                            <div class="product-stock">
+                                <span class="stock-label">Stock:</span>
+                                <span class="stock-value">${stockValue}</span>
+                                <span class="stock-status ${getStockStatusClass(stockValue)}">
+                                    ${getStockStatusText(stockValue)}
+                                </span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="edit-btn" onclick='editProduct(${JSON.stringify(product)})'>
+                                    <span class="material-icons">edit</span>
+                                    Edit
+                                </button>
+                                <button class="delete-btn" onclick="deleteProduct('${productId}')">
+                                    <span class="material-icons">delete</span>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStockStatusClass(stock) {
+            if (stock > 50) return 'high';
+            if (stock > 20) return 'medium';
+            return 'low';
+        }
+
+        function getStockStatusText(stock) {
+            if (stock > 50) return 'Well Stocked';
+            if (stock > 20) return 'Medium Stock';
+            return 'Low Stock';
+        }
+
+        function updateImagePreview(input) {
+            const preview = document.getElementById('imagePreview');
+            const imageUrl = input.value;
+
+            if (imageUrl) {
+                preview.innerHTML = `<img src="${imageUrl}" alt="Product preview">`;
+                preview.classList.remove('empty');
+            } else {
+                preview.innerHTML = '';
+                preview.classList.add('empty');
+            }
+        }
+
+        function openModal(product = null) {
+            const modal = document.getElementById('productModal');
+            const form = document.getElementById('productForm');
+            const title = document.getElementById('modalTitle');
+
+            if (product) {
+                title.textContent = 'Edit Product';
+                document.getElementById('productId').value = product.id;
+                document.getElementById('name').value = product.name;
+                document.getElementById('description').value = product.description;
+                document.getElementById('price').value = product.price;
+                document.getElementById('stock').value = product.stock || 0;
+                document.getElementById('image').value = product.image;
+                updateImagePreview(document.getElementById('image'));
+            } else {
+                title.textContent = 'Add New Product';
+                form.reset();
+                document.getElementById('productId').value = '';
+                document.getElementById('imagePreview').innerHTML = '';
+                document.getElementById('imagePreview').classList.add('empty');
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('productModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function editProduct(product) {
+            const productId = product.id || product._id; // Handle both id formats
+            const productToEdit = {
+                ...product,
+                id: productId
+            };
+            openModal(productToEdit);
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                fetch(`http://127.0.0.1:5000/api/admin/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete product');
+                    }
+                    loadProducts();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting product: ' + error.message);
+                });
+            }
+        }
+
+        function saveProduct() {
+            const form = document.getElementById('productForm');
+            if (form.checkValidity()) {
+                const productData = {
+                    name: document.getElementById('name').value,
+                    description: document.getElementById('description').value,
+                    price: parseFloat(document.getElementById('price').value),
+                    stock: parseInt(document.getElementById('stock').value),
+                    image: document.getElementById('image').value
+                };
+
+                const productId = document.getElementById('productId').value;
+                
+                const url = productId ? 
+                    `http://127.0.0.1:5000/api/admin/products/${productId}` : 
+                    'http://127.0.0.1:5000/api/admin/products';
+                
+                const method = productId ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(productData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(text || 'Failed to save product');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    closeModal();
+                    loadProducts();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error saving product: ' + error.message);
+                });
+            } else {
+                form.reportValidity();
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('productModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeModal();
+            }
+        });
+
+        // Prevent closing when clicking inside modal
+        document.querySelector('.modal-content').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    </script>
+</body>
+</html> 
