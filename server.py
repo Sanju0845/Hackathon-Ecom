@@ -4,9 +4,27 @@ import json
 import os
 from datetime import datetime
 import socket
+import traceback
 
 app = Flask(__name__)
-CORS(app)
+# Configure CORS to allow requests from any origin
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+
+# Error handling
+@app.errorhandler(Exception)
+def handle_error(error):
+    print(f"Error: {str(error)}")
+    print(traceback.format_exc())
+    return jsonify({
+        'error': 'An unexpected error occurred',
+        'message': str(error)
+    }), 500
 
 # Static File Serving
 @app.route('/')
@@ -68,41 +86,62 @@ init_json_files()
 # User Authentication
 @app.route('/api/register', methods=['POST'])
 def register():
-    data = request.json
-    users = load_data('users.json')
-    
-    if any(user['email'] == data['email'] for user in users):
-        return jsonify({'error': 'Email already registered'}), 400
-    
-    new_user = {
-        'id': str(len(users) + 1),
-        'name': data['name'],
-        'email': data['email'],
-        'password': data['password'],
-        'is_admin': data.get('is_admin', False)
-    }
-    
-    users.append(new_user)
-    save_data('users.json', users)
-    return jsonify({'message': 'User registered successfully'}), 201
+    try:
+        data = request.json
+        if not data or not all(k in data for k in ['name', 'email', 'password']):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        users = load_data('users.json')
+        
+        if any(user['email'] == data['email'] for user in users):
+            return jsonify({'error': 'Email already registered'}), 400
+        
+        new_user = {
+            'id': str(len(users) + 1),
+            'name': data['name'],
+            'email': data['email'],
+            'password': data['password'],
+            'is_admin': data.get('is_admin', False)
+        }
+        
+        users.append(new_user)
+        save_data('users.json', users)
+        return jsonify({
+            'message': 'User registered successfully',
+            'userId': new_user['id'],
+            'name': new_user['name'],
+            'is_admin': new_user['is_admin']
+        }), 201
+    except Exception as e:
+        print(f"Registration error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({'error': 'Registration failed', 'message': str(e)}), 500
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json
-    users = load_data('users.json')
-    
-    user = next((user for user in users 
-                 if user['email'] == data['email'] and 
-                 user['password'] == data['password']), None)
-    
-    if user:
-        return jsonify({
-            'message': 'Login successful',
-            'name': user['name'],
-            'is_admin': user.get('is_admin', False),
-            'userId': user['id']
-        }), 200
-    return jsonify({'error': 'Invalid email or password'}), 401
+    try:
+        data = request.json
+        if not data or not all(k in data for k in ['email', 'password']):
+            return jsonify({'error': 'Missing email or password'}), 400
+
+        users = load_data('users.json')
+        
+        user = next((user for user in users 
+                     if user['email'] == data['email'] and 
+                     user['password'] == data['password']), None)
+        
+        if user:
+            return jsonify({
+                'message': 'Login successful',
+                'name': user['name'],
+                'is_admin': user.get('is_admin', False),
+                'userId': user['id']
+            }), 200
+        return jsonify({'error': 'Invalid email or password'}), 401
+    except Exception as e:
+        print(f"Login error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({'error': 'Login failed', 'message': str(e)}), 500
 
 # Products
 @app.route('/api/products', methods=['GET'])
