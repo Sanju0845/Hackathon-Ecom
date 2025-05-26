@@ -1,7 +1,7 @@
--- Enable Row Level Security
-ALTER DATABASE postgres SET "app.settings.jwt_secret" = 'your-jwt-secret';
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Create tables with RLS policies
+-- Users table (for login/signup)
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
@@ -11,139 +11,93 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Products table (for admin to add/edit products)
 CREATE TABLE products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     stock INTEGER NOT NULL DEFAULT 0,
-    image TEXT,
+    image_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Orders table (when user makes a purchase)
+CREATE TABLE orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id),
+    total DECIMAL(10,2) NOT NULL,
+    status TEXT DEFAULT 'pending',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE cart_items (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-    quantity INTEGER NOT NULL DEFAULT 1,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, product_id)
-);
-
-CREATE TABLE orders (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    status TEXT NOT NULL DEFAULT 'pending',
-    total DECIMAL(10,2) NOT NULL,
-    shipping_address TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
+-- Order items (products in each order)
 CREATE TABLE order_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
-    product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+    product_id UUID REFERENCES products(id),
     quantity INTEGER NOT NULL,
     price_at_time DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Cart items (temporary storage for items in cart)
+CREATE TABLE cart_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id),
+    product_id UUID REFERENCES products(id),
+    quantity INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, product_id)
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_products_name ON products(name);
-CREATE INDEX idx_cart_items_user ON cart_items(user_id);
 CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_cart_items_user ON cart_items(user_id);
 
--- Enable Row Level Security on all tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
-
--- RLS Policies
-
--- Products: Anyone can view, only admins can modify
-CREATE POLICY "Products are viewable by everyone" ON products
-    FOR SELECT USING (true);
-
-CREATE POLICY "Products are insertable by admins" ON products
-    FOR INSERT WITH CHECK (
-        auth.jwt() ? auth.jwt()->>'is_admin' = 'true' : false
-    );
-
-CREATE POLICY "Products are updatable by admins" ON products
-    FOR UPDATE USING (
-        auth.jwt() ? auth.jwt()->>'is_admin' = 'true' : false
-    );
-
-CREATE POLICY "Products are deletable by admins" ON products
-    FOR DELETE USING (
-        auth.jwt() ? auth.jwt()->>'is_admin' = 'true' : false
-    );
-
--- Cart: Users can only access their own cart
-CREATE POLICY "Users can manage their own cart" ON cart_items
-    FOR ALL USING (
-        auth.uid() = user_id
-    );
-
--- Orders: Users can view their own orders, admins can view all
-CREATE POLICY "Users can view their own orders" ON orders
-    FOR SELECT USING (
-        auth.uid() = user_id OR
-        (auth.jwt() ? auth.jwt()->>'is_admin' = 'true' : false)
-    );
-
-CREATE POLICY "Users can create their own orders" ON orders
-    FOR INSERT WITH CHECK (
-        auth.uid() = user_id
-    );
-
--- Order Items: Same policy as orders
-CREATE POLICY "Users can view their own order items" ON order_items
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM orders
-            WHERE orders.id = order_items.order_id
-            AND (
-                orders.user_id = auth.uid() OR
-                (auth.jwt() ? auth.jwt()->>'is_admin' = 'true' : false)
-            )
-        )
-    );
-
--- Functions
-
--- Function to update product stock
-CREATE OR REPLACE FUNCTION update_product_stock()
-RETURNS TRIGGER AS $$
+-- Create stored procedure for getting orders
+CREATE OR REPLACE FUNCTION get_orders()
+RETURNS TABLE (
+    order_id UUID,
+    created_at TIMESTAMPTZ,
+    status TEXT,
+    total DECIMAL(10,2),
+    customer_name TEXT,
+    customer_email TEXT,
+    customer_phone TEXT,
+    customer_address TEXT,
+    items JSONB
+) AS $$
 BEGIN
-    UPDATE products
-    SET stock = stock - NEW.quantity
-    WHERE id = NEW.product_id;
-    RETURN NEW;
+    RETURN QUERY
+    SELECT 
+        o.id AS order_id,
+        o.created_at,
+        o.status,
+        o.total,
+        u.name AS customer_name,
+        u.email AS customer_email,
+        NULL AS customer_phone,
+        NULL AS customer_address,
+        COALESCE(
+            jsonb_agg(
+                jsonb_build_object(
+                    'name', p.name,
+                    'price', oi.price_at_time,
+                    'quantity', oi.quantity,
+                    'image', p.image_url
+                )
+            ) FILTER (WHERE p.id IS NOT NULL),
+            '[]'::jsonb
+        ) AS items
+    FROM orders o
+    LEFT JOIN users u ON o.user_id = u.id
+    LEFT JOIN order_items oi ON o.id = oi.order_id
+    LEFT JOIN products p ON oi.product_id = p.id
+    GROUP BY o.id, o.created_at, o.status, o.total, u.name, u.email
+    ORDER BY o.created_at DESC;
 END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to update stock when order is placed
-CREATE TRIGGER update_stock_on_order
-    AFTER INSERT ON order_items
-    FOR EACH ROW
-    EXECUTE FUNCTION update_product_stock();
-
--- Function to update product timestamps
-CREATE OR REPLACE FUNCTION update_product_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to update product timestamp on update
-CREATE TRIGGER update_product_timestamp
-    BEFORE UPDATE ON products
-    FOR EACH ROW
-    EXECUTE FUNCTION update_product_timestamp(); 
+$$ LANGUAGE plpgsql; 

@@ -3,287 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Our Store</title>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <!-- Leaflet CSS for map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <title>Billing - Our Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
     <style>
+        :root {
+            --primary: #1a1a1a;
+            --primary-light: #95A8E8;
+            --secondary: #666;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --bg-primary: #fff;
+            --bg-secondary: #f4f7ff;
+            --border-color: #e5e7eb;
+            --success: #22c55e;
+            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Google Sans', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            background-color: #f8f9fa;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+            background-color: var(--bg-secondary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 2rem;
         }
 
         .container {
-            width: 100%;
-            max-width: 1400px;
-            height: calc(100vh - 2rem);
+            max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            padding: 1rem;
-            overflow: hidden;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
         }
 
-        .map-section {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .details-section {
-            height: 100%;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-
-        .details-section::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .details-section::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .details-section::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        .order-summary {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .order-items {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-
-        .order-items::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .order-items::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .order-items::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        .map-container {
-            height: calc(100% - 3rem);
-        }
-
-        /* Adjust form elements to be more compact */
-        .form-group {
-            margin-bottom: 0.5rem;
-        }
-
-        input, textarea {
-            padding: 0.5rem;
-        }
-
-        .address-fields {
-            gap: 0.5rem;
-        }
-
-        .payment-methods {
-            gap: 0.5rem;
-        }
-
-        .payment-method {
-            height: 100px;
-        }
-
-        .map-container {
-            flex-grow: 1;
+        .billing-section {
+            background: var(--bg-primary);
             border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 2px solid #eee;
-            position: relative;
-            min-height: 300px;
-        }
-
-        .address-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .address-fields {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .payment-section {
-            margin-top: auto;
-        }
-
-        .order-total {
-            margin-top: auto;
-            padding-top: 1rem;
-            border-top: 2px solid #eee;
-        }
-
-        .total-amount {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #2196F3;
-            text-align: center;
-            margin: 1rem 0;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
         }
 
         .order-summary {
-            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            height: fit-content;
         }
 
-        h2 {
-            color: #1a1a1a;
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
         }
 
         .form-group {
-            margin-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
         }
 
         label {
             display: block;
-            margin-bottom: 0.25rem;
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1.5px solid #ddd;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            background: #f8f9fa;
-        }
-
-        input:focus, textarea:focus {
-            border-color: #2196F3;
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-            outline: none;
-        }
-
-        #current-location-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            z-index: 1000;
-            background-color: white;
-            color: #333;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        #current-location-btn:hover {
-            background-color: #f0f0f0;
-        }
-
-        #map {
-            height: 100%;
-        }
-
-        .payment-methods {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .payment-method {
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            padding: 1.5rem;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 140px;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .payment-method:hover {
-            border-color: #2196F3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .payment-method.selected {
-            border-color: #2196F3;
-            background: linear-gradient(to bottom, #e3f2fd, #fff);
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
-        }
-
-        .payment-method img {
-            height: 40px;
-            margin-bottom: 0.75rem;
-        }
-
-        .payment-method-text {
             font-size: 0.9rem;
             font-weight: 500;
-            color: #333;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .upi-section {
+            margin-top: 2rem;
+        }
+
+        .upi-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .upi-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .upi-option {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upi-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .upi-option.selected {
+            border-color: var(--primary);
+            background: var(--bg-secondary);
+        }
+
+        .upi-option img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 0.5rem;
+        }
+
+        .upi-option span {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .upi-id {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .upi-id span {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .order-items {
+            margin-bottom: 1.5rem;
         }
 
         .order-item {
             display: flex;
             gap: 1rem;
-            padding: 0.75rem;
-            border-bottom: 1px solid #eee;
-            transition: all 0.2s ease;
-            border-radius: 8px;
-        }
-
-        .order-item:hover {
-            background: #f8f9fa;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .order-item img {
-            width: 50px;
-            height: 50px;
+            width: 64px;
+            height: 64px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 8px;
         }
 
         .item-details {
@@ -292,728 +173,261 @@
 
         .item-name {
             font-weight: 500;
-            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
         }
 
         .item-price {
-            color: #666;
-            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .order-total {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            color: var(--text-secondary);
         }
 
         .total-row.final {
+            font-weight: 600;
+            color: var(--text-primary);
             font-size: 1.1rem;
-            font-weight: 500;
-            color: #2196F3;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
         }
 
-        .place-order-btn {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            color: white;
-            border: none;
+        .pay-button {
             width: 100%;
             padding: 1rem;
-            border-radius: 12px;
-            font-size: 1.1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             margin-top: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(33, 150, 243, 0.2);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            transition: all 0.2s;
         }
 
-        .place-order-btn:hover {
-            background: linear-gradient(45deg, #1976D2, #1565C0);
+        .pay-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(33, 150, 243, 0.3);
-        }
-
-        .place-order-btn:active {
-            transform: translateY(0);
-        }
-
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .order-summary {
-                grid-column: span 2;
-            }
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 0;
-                align-items: flex-start;
-            }
             .container {
                 grid-template-columns: 1fr;
-                min-height: auto;
-                padding: 0.5rem;
-                gap: 1rem;
             }
-            .order-summary {
-                grid-column: span 1;
+            
+            body {
+                padding: 1rem;
             }
-            .map-section, .details-section, .order-summary {
-                border-radius: 0;
-                height: auto;
-            }
-            .map-container {
-                height: 300px;
-            }
-            .address-fields {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Success Animation Overlay */
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .success-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .success-animation {
-            background: white;
-            border-radius: 20px;
-            padding: 3rem;
-            text-align: center;
-            transform: scale(0.7);
-            transition: transform 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .success-overlay.active .success-animation {
-            transform: scale(1);
-        }
-
-        .success-tick {
-            width: 80px;
-            height: 80px;
-            background: #2CB67D;
-            border-radius: 50%;
-            margin: 0 auto 1.5rem;
-            position: relative;
-            animation: scaleIn 0.3s ease-in-out forwards;
-        }
-
-        .success-tick::before,
-        .success-tick::after {
-            content: '';
-            position: absolute;
-            background: white;
-            border-radius: 2px;
-        }
-
-        .success-tick::before {
-            width: 20px;
-            height: 4px;
-            left: 18px;
-            top: 42px;
-            transform: rotate(45deg);
-            transform-origin: left center;
-            animation: leftCheck 0.3s ease-in 0.3s forwards;
-            opacity: 0;
-        }
-
-        .success-tick::after {
-            width: 40px;
-            height: 4px;
-            left: 26px;
-            top: 38px;
-            transform: rotate(-45deg);
-            transform-origin: left center;
-            animation: rightCheck 0.3s ease-in 0.4s forwards;
-            opacity: 0;
-        }
-
-        @keyframes scaleIn {
-            0% {
-                transform: scale(0);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        @keyframes leftCheck {
-            0% {
-                opacity: 0;
-                transform: rotate(45deg) scaleX(0);
-            }
-            100% {
-                opacity: 1;
-                transform: rotate(45deg) scaleX(1);
-            }
-        }
-
-        @keyframes rightCheck {
-            0% {
-                opacity: 0;
-                transform: rotate(-45deg) scaleX(0);
-            }
-            100% {
-                opacity: 1;
-                transform: rotate(-45deg) scaleX(1);
-            }
-        }
-
-        .success-message {
-            color: #2CB67D;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: fadeInUp 0.3s ease-out 0.6s forwards;
-        }
-
-        .success-details {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 2rem;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: fadeInUp 0.3s ease-out 0.8s forwards;
-        }
-
-        @keyframes fadeInUp {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .continue-shopping {
-            background: #2CB67D;
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: fadeInUp 0.3s ease-out 1s forwards;
-        }
-
-        .continue-shopping:hover {
-            background: #22a06d;
-            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-    <!-- Replace the success overlay HTML -->
-    <div class="success-overlay" id="successOverlay">
-        <div class="success-animation">
-            <div class="success-tick"></div>
-            <div class="success-message">Order Placed Successfully!</div>
-            <div class="success-details">Thank you for your purchase.</div>
-            <button class="continue-shopping" onclick="window.location.href='products.html'">Continue Shopping</button>
-        </div>
-    </div>
-
     <div class="container">
-        <div class="map-section">
-            <h2>Select Delivery Location</h2>
-            <div class="map-container">
-                <div id="map"></div>
-                <button id="current-location-btn" onclick="getCurrentLocation()">
-                    <span class="material-icons">my_location</span>
-                    Current Location
-                </button>
-            </div>
-            <input type="hidden" id="latitude" name="latitude">
-            <input type="hidden" id="longitude" name="longitude">
-        </div>
-
-        <div class="details-section">
-            <h2>Delivery Details</h2>
-            <form id="checkoutForm" onsubmit="handleOrderSubmit(event)">
-                <div class="address-section">
+        <div class="billing-section">
+            <h1>Billing Details</h1>
+            <form id="billingForm">
                     <div class="form-group">
                         <label for="name">Full Name</label>
-                        <input type="text" id="name" name="name" required>
+                    <input type="text" id="name" required>
                     </div>
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                    <label for="address">Delivery Address</label>
+                    <input type="text" id="address" required>
                     </div>
                     <div class="form-group">
-                        <label for="phone">Phone</label>
-                        <input type="tel" id="phone" name="phone" required>
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" required>
                     </div>
                     
-                    <div class="address-fields">
-                        <div class="form-group">
-                            <label for="houseNumber">House/Building Number</label>
-                            <input type="text" id="houseNumber" name="houseNumber" required>
+                <div class="upi-section">
+                    <h2 class="upi-title">Select Payment Method</h2>
+                    <div class="upi-options">
+                        <div class="upi-option" onclick="selectUpi('phonepe')">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAMAAACfWMssAAAAbFBMVEVnOrf///9iMrXKv+NeKrRmOLdYHrJkNbbw7vdgLbRbJbPGuuFhMLXc1e3IveNVF7G0o9n7+v329PqSeMng2u+7rdyYf8t9W8CAYMGnk9NtQ7l5Vr+3p9q/st6rmdXY0OuHasSMcMZHAKzRx+fRQ1l2AAACYElEQVRIia2W2ZqDIAyFBVlaKlJcaKebs7z/Ow6grUDQdpZz5Uf5K4knIQX6pYr/Bjdy118u/U5ufgDqnamUIFsrIlTV7vRLoGwVwbR4iGKiWvkU7A4MF0CYHbpVUBvFIebEldHLoKyqPOZUVXIJ7NUcGhFCkJikqs+Db2zeJBq7MLCYLNhbDgy5Yrt3Sx9pngLyAfbx3zMX0CZ9ZcH6FJQqCYi7JN62KalkDOqKJjvwu1vn6TKtdAQa+B2EC7MW6XJlQrBTgLPxOLOcgSFUF4CHnF9oYU/VgfzwwwzCX8dTfbgggHX9SUawzfjaSdjkNyBK3N5BHUZIWaBPm/z9p3sKs6v0BNaBKelpE8nZwOkUkKSewDAMfkZZhdnFZgLDen8FpHgEmyjEJTAKsvGgjPKGW9O6GLrWWLWDfRzsUpR3IT1YxwWLsTfboLAV27nkMRx/L5cdC/ZpCfhiHPw5iANLkm7oPXj5OXj5G/jro9Zg/Rk4JUemNn4KTp+jSavYg2OpiTIHTgYAjcV7EXHuSqXJgHfLgVqlY3XbZs6+UAZ8mBxkR/j9uiwblAMfZaXTIOkpMngKPgoZtg58XAHn1pFpVvg0dWwNwaBZoSNoj1Sc93W5P18ByMfTLDdkviVkK6ABooacuwK8oHPiKyDuO2sgrVAMZm+PDKi6BETX7DVAEq+yK0pBdMuR2Axfw2xJdkMQXCDt9JHjonHlqvIZuudFXVEeRB1eG5BwNJUls9zaSBbvBEPgUWWHwOP6EOhRA8dOk2ILg25p6DzoclO+NuiOamTpRutSNgsb/n2Yf6pvlrQgHh3FeJIAAAAASUVORK5CYII=" alt="PhonePe">
+                            <span>PhonePe</span>
                         </div>
-                        <div class="form-group">
-                            <label for="flatNumber">Flat/Unit Number</label>
-                            <input type="text" id="flatNumber" name="flatNumber" required>
+                        <div class="upi-option" onclick="selectUpi('paytm')">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAgElEQVR4AWP4//8/IyUYwwAWvXx3IJ6JBU8H4lQgZsdrAFThfzz4MBCzkmcAAkcTa8BfIL4LxK/RDOgl1oCPUDF2IP6OJD6deAMQ4h/JMeAzECsDsSEQ/yTJAAK4lVIDnCkxYCLRCQka8ulQnAjEujB1JMYCAg8NA1yRcmAtIQMA+btEVcQPmh8AAAAASUVORK5CYII=" alt="Paytm">
+                            <span>Paytm</span>
+                        </div>
+                        <div class="upi-option" onclick="selectUpi('fam')">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEs0lEQVR4Ab2WU5QkWRRF93sRZds1tm3btj0/o5+xbdu2bbcxaKtsZzaS8W7jfcRHKbMae60wrs6JFQoLH//2Cyf9eRAdW59alBNv2dOV0C4aUyKCZowoAIUx6E5PZUwJutUTyts/7Ht/q18544AD/XsaP7uYgFvtbrTsh8PSTOAaLbFdFSYbUKwZRNCLjUqZGNG5j87PPPrngniDt/4JL6PqP7+MrtRtnG2Dr1+6IvhdClPEWkRwuqM658ZJ+Ve+WhMaZ5S8Bssy9zgqw+t9Q+H5wdduEl0hp/CczMisH3Vb3tlFKyq/eu0H91F4pWkmeFVb9rH5Oi9Wv9fKmbM2EAPiMRRaYnvmx+p3066EdlaYnNGalgR+0KwqqD4YUrIHvUNhch0J7eQqTAmghg2sNOh08MK2IqWH1TkYcDMgfzOoOhAq94Vl7dA5kSHQK23uIuIM+8LUHNj8PCjaFnpnQN3nsKQJlAKUXy0KMkqgdBdbcfF2kJoHCCz8EGJLQDlDqtFFBIz4LULZfScVNj4dNj0blAvF20P5njDjWWj/ywZWDuRvDlUH2Gpz1wedChgA6JgAjd+DAGLwUWCFgE1AzOB5x2PQ9BPkrA81BwFA3sawy80w8VYI1sGmZ0LtYZBR7HcNIB6Glt9g5vMQ6rFjQwbHEIOLsR0YjAf982HqfbYbVfsBAoE6yKqEbS6Hwq0AWwDKAS8EnVOg/muI9EM8gq1eGBrBtVYxDI2CZT0w730o2xUiA9DwA2x2BuRtiB2DBhOFrsnQ/Ivdrz0Ucmph3HVgvBGF63dgWBT0zISBhTCwACr28IOD7VLbOHu8wdFQuLm13bz3INAIokbogGGwCIciHICWP+0oag/xO2ZiVuG1B0N2NTgpEFsGDd/DjJfBiw3vcKVARh2B3yrqv4ctzrLWtPeDToHSnUBpO57mqVD3JbRNgOhiX3zDvZOERgAgEGyC9CL7UjGAsvuhHtudRV9B138QX4r1vK1wRJTxbTgqxrMtB2zFQWj8GeZ9CD2zwIuCdgANtrrE/hIwQkJLPAqd022yffNgxis2iehSazc0GEl6sRpIJGMBGn6Bsp1hYBFsdAzkrQ+tE6BnDmhFcijwO2BGz1aAYCtMeRxqD4DCTe2sM0v955NazKpFI0LCizHW222TwMTtzAs28ec+hsXFZkLCxCIw+Qlw0mGrM6B0O2vNSABQJIUS/0OUFOEBGHevDbrlaVC+E9T9CMolKbS1oYcIkGwSQZjwMAw0wnoHQNs0CPWBUiSGQox4rojuwoiAKJLDWnPGO1C0ua1eJJk6jDi6y43rjCmp0h9USB5jpXs2oECphDspqEBcZUzVA5mbjzcqZRLGMOZF8F2S4GKUO64/a/PJuqruy76wW/CYoLsRYV0sgu6IOPmPV7d8FXDOvfAsFlSfU1/WP6nf8cK7K/Gy1m5wpzPiFtzw13bPfqE0ogDqXjmN/uzNnM2a3zw4Pdp7tTaRPRSSC74wEUDB2I6VCCpgdNq4SGrhY3PWv+T3osD/3gYXfejf8vqESZz36G60HXhIQd7Shbu58SU7KfFKAcXYUYAnyumKu1lTg1kbT66Y+fPAS2dP49I9dgJgOYEsXs0SYzh3AAAAAElFTkSuQmCC" alt="FamPay">
+                            <span>FamPay</span>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="address">Detailed Address</label>
-                        <textarea id="address" name="address" placeholder="Street name, Landmarks, Area details" required></textarea>
-                    </div>
-                </div>
-
-                <div class="payment-section">
-                    <h2>Payment Method</h2>
-                    <div class="payment-methods">
-                        <div class="payment-method" onclick="selectPayment('cod')">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1554/1554401.png" alt="COD">
-                            <div class="payment-method-text">Cash on Delivery</div>
-                        </div>
-                        <div class="payment-method" onclick="selectPayment('online')">
-                            <img src="https://cdn-icons-png.flaticon.com/512/179/179431.png" alt="Online">
-                            <div class="payment-method-text">Pay Online</div>
-                        </div>
+                    <div class="upi-id">
+                        <p>UPI ID: <span>9493562061@fam</span></p>
                     </div>
                 </div>
             </form>
         </div>
 
         <div class="order-summary">
-            <h2>Order Summary</h2>
-            <div id="orderItems" class="order-items">
-                <!-- Order items will be populated here -->
+            <h1>Order Summary</h1>
+            <div class="order-items" id="orderItems">
+                <!-- Order items will be added here dynamically -->
             </div>
             <div class="order-total">
                 <div class="total-row">
                     <span>Subtotal</span>
-                    <span id="subtotal">$0.00</span>
+                    <span id="subtotal">₹0.00</span>
                 </div>
                 <div class="total-row">
                     <span>Shipping</span>
-                    <span id="shipping">$5.00</span>
+                    <span>Free</span>
                 </div>
                 <div class="total-row final">
                     <span>Total</span>
-                    <span id="total">$0.00</span>
+                    <span id="total">₹0.00</span>
                 </div>
-                <button type="submit" class="place-order-btn" form="checkoutForm">Place Order</button>
             </div>
+            <button class="pay-button" onclick="processPayment()">Pay Now</button>
         </div>
     </div>
 
-    <!-- Leaflet JS for map -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        let map;
-        let marker;
-        let selectedPayment = '';
-
-        // Initialize map
-        window.addEventListener('load', () => {
-            map = L.map('map').setView([0, 0], 2);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Try to get initial location
-            getCurrentLocation();
-
-            map.on('click', e => {
-                setMarker(e.latlng.lat, e.latlng.lng);
-            });
-
-            loadOrderSummary();
-        });
-
-        function getCurrentLocation() {
-            // First check if geolocation is supported
-            if (!navigator.geolocation) {
-                alert('Geolocation is not supported by your browser. Please enter your address manually.');
-                return;
-            }
-
-            // Show loading state
-            const locationBtn = document.getElementById('current-location-btn');
-            const originalBtnText = locationBtn.innerHTML;
-            locationBtn.innerHTML = '<span class="material-icons">sync</span> Getting location...';
-            locationBtn.disabled = true;
-
-            // Request permission and get location
-            const permissionRequest = navigator.permissions.query({ name: 'geolocation' })
-                .then(permissionStatus => {
-                    // Listen for permission changes
-                    permissionStatus.onchange = () => {
-                        if (permissionStatus.state === 'granted') {
-                            requestLocation();
-                        }
-                    };
-
-                    // Check initial permission state
-                    if (permissionStatus.state === 'granted') {
-                        requestLocation();
-                    } else {
-                        // This will trigger the permission prompt
-                        requestLocation();
-                    }
-                })
-                .catch(error => {
-                    // Fallback for browsers that don't support permissions API
-                    requestLocation();
-                });
-
-            function requestLocation() {
-                navigator.geolocation.getCurrentPosition(
-                    // Success callback
-                    position => {
-                        const { latitude, longitude } = position.coords;
-                        map.setView([latitude, longitude], 16);
-                        setMarker(latitude, longitude);
-                        
-                        // Reset button
-                        locationBtn.innerHTML = originalBtnText;
-                        locationBtn.disabled = false;
-                    },
-                    // Error callback
-                    error => {
-                        console.error('Geolocation error:', error);
-                        let errorMessage = '';
-                        
-                        switch (error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMessage = 'Location permission was denied. To enable location:\n\n' +
-                                    '1. Click the location icon in the address bar\n' +
-                                    '2. Select "Allow"\n' +
-                                    '3. Click "Current Location" again';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMessage = 'Location information is unavailable. Please try again or enter your address manually.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMessage = 'Location request timed out. Please check your internet connection and try again.';
-                                break;
-                            default:
-                                errorMessage = 'An unknown error occurred. Please try again or enter your address manually.';
-                        }
-
-                        // Reset button
-                        locationBtn.innerHTML = originalBtnText;
-                        locationBtn.disabled = false;
-
-                        // Show error in a more user-friendly way
-                        const errorDiv = document.createElement('div');
-                        errorDiv.style.cssText = `
-                            position: fixed;
-                            top: 50%;
-                            left: 50%;
-                            transform: translate(-50%, -50%);
-                            background: white;
-                            padding: 20px;
-                            border-radius: 8px;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                            z-index: 1000;
-                            max-width: 80%;
-                            width: 400px;
-                            text-align: center;
-                        `;
-                        
-                        errorDiv.innerHTML = `
-                            <h3 style="margin-bottom: 10px; color: #d32f2f;">Location Access Error</h3>
-                            <p style="margin-bottom: 15px; white-space: pre-line;">${errorMessage}</p>
-                            <button onclick="this.parentElement.remove()" style="
-                                background: #2196F3;
-                                color: white;
-                                border: none;
-                                padding: 8px 16px;
-                                border-radius: 4px;
-                                cursor: pointer;
-                            ">OK</button>
-                        `;
-                        
-                        document.body.appendChild(errorDiv);
-                    },
-                    // Options
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    }
-                );
-            }
-        }
-
-        function setMarker(lat, lng) {
-            if (marker) {
-                map.removeLayer(marker);
-            }
-            marker = L.marker([lat, lng], {
-                draggable: true // Make marker draggable
-            }).addTo(map);
+        // Get checkout data from localStorage
+        const checkoutData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+        let selectedUpi = null;  // Initialize selectedUpi at the top level
             
-            // Update coordinates when marker is dragged
-            marker.on('dragend', function(e) {
-                const position = e.target.getLatLng();
-                updateLocationDetails(position.lat, position.lng);
-            });
+        // Populate user data
+        document.getElementById('name').value = user.name || '';
+        document.getElementById('address').value = user.address || '';
+        document.getElementById('phone').value = user.phone || '';
 
-            updateLocationDetails(lat, lng);
+        // Display order items
+                const orderItems = document.getElementById('orderItems');
+        const subtotal = document.getElementById('subtotal');
+        const total = document.getElementById('total');
+
+        if (checkoutData.items && checkoutData.items.length > 0) {
+            orderItems.innerHTML = checkoutData.items.map(item => `
+                        <div class="order-item">
+                    <img src="${item.products?.image_url || 'https://via.placeholder.com/64'}" 
+                         alt="${item.products?.name || 'Product'}"
+                         onerror="this.src='https://via.placeholder.com/64'">
+                            <div class="item-details">
+                        <div class="item-name">${item.products?.name || 'Product'}</div>
+                        <div class="item-price">
+                            ₹${parseFloat(item.products?.price || 0).toFixed(2)} × ${item.quantity}
+                        </div>
+                    </div>
+                    </div>
+            `).join('');
+
+            subtotal.textContent = `₹${checkoutData.total.toFixed(2)}`;
+            total.textContent = `₹${checkoutData.total.toFixed(2)}`;
         }
 
-        function updateLocationDetails(lat, lng) {
-            document.getElementById('latitude').value = lat;
-            document.getElementById('longitude').value = lng;
-            
-            // Get address details from coordinates
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-                .then(res => res.json())
-                .then(data => {
-                    const address = data.display_name;
-                    document.getElementById('address').value = address;
-                    
-                    // Try to extract and fill other address fields
-                    if (data.address) {
-                        if (data.address.house_number) {
-                            document.getElementById('houseNumber').value = data.address.house_number;
-                        }
-                        if (data.address.road) {
-                            const currentAddress = document.getElementById('address').value;
-                            if (!currentAddress.includes(data.address.road)) {
-                                document.getElementById('address').value = `${data.address.road}, ${currentAddress}`;
-                            }
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching address:', error);
-                });
-        }
-
-        function selectPayment(method) {
-            selectedPayment = method;
-            document.querySelectorAll('.payment-method').forEach(el => {
-                el.classList.remove('selected');
+        function selectUpi(upi) {
+            selectedUpi = upi;
+            document.querySelectorAll('.upi-option').forEach(option => {
+                option.classList.remove('selected');
             });
             event.currentTarget.classList.add('selected');
-        }
 
-        function loadOrderSummary() {
-            // Get cart data from localStorage
-            let cartData = localStorage.getItem('cartItems');
-            if (!cartData) {
-                // Show empty cart message
-                document.getElementById('orderItems').innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: #666;">
-                        <span class="material-icons">shopping_cart</span>
-                        <p>Your cart is empty</p>
-                    </div>
-                `;
-                updateTotals(0);
-                return;
-            }
-
-            try {
-                // Parse cart data
-                cartData = JSON.parse(cartData);
-                const orderItems = document.getElementById('orderItems');
-                let subtotal = 0;
-
-                // Get products data
-                const productsData = JSON.parse(localStorage.getItem('products') || '[]');
-                
-                // Generate HTML for each cart item
-                const itemsHTML = Object.entries(cartData).map(([productId, quantity]) => {
-                    // Find product details
-                    const product = productsData.find(p => p.id.toString() === productId.toString());
-                    if (!product) return '';
-
-                    const itemTotal = product.price * quantity;
-                    subtotal += itemTotal;
-
-                    return `
-                        <div class="order-item">
-                            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/50'">
-                            <div class="item-details">
-                                <div class="item-name">${product.name}</div>
-                                <div class="item-price">$${product.price.toFixed(2)} × ${quantity}</div>
-                            </div>
-                            <div class="item-total">$${itemTotal.toFixed(2)}</div>
-                        </div>
-                    `;
-                }).join('');
-
-                // Update order items and totals
-                orderItems.innerHTML = itemsHTML || `
-                    <div style="text-align: center; padding: 2rem; color: #666;">
-                        <span class="material-icons">shopping_cart</span>
-                        <p>Your cart is empty</p>
-                    </div>
-                `;
-                updateTotals(subtotal);
-
-            } catch (error) {
-                console.error('Error loading cart:', error);
-                document.getElementById('orderItems').innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: #dc3545;">
-                        <span class="material-icons">error_outline</span>
-                        <p>Error loading cart items</p>
-                    </div>
-                `;
-                updateTotals(0);
-            }
-        }
-
-        function updateTotals(subtotal) {
-            const shipping = 5.00;
-            const total = subtotal + shipping;
-
-            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
-            document.getElementById('shipping').textContent = `$${shipping.toFixed(2)}`;
-            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
-        }
-
-        // Load cart data when page loads
-        window.addEventListener('DOMContentLoaded', () => {
-            // First load products data if not already loaded
-            if (!localStorage.getItem('products')) {
-                fetch('/api/products')
-                    .then(response => response.json())
-                    .then(products => {
-                        localStorage.setItem('products', JSON.stringify(products));
-                        loadOrderSummary();
-                    })
-                    .catch(error => {
-                        console.error('Error loading products:', error);
-                        loadOrderSummary();
-                    });
+            if (upi === 'fam') {
+                // Open FamPay app
+                const amount = checkoutData.total;
+                const upiUrl = `upi://pay?pa=9493562061@fam&pn=OurStore&am=${amount}&cu=INR&tn=Order Payment`;
+                window.location.href = upiUrl;
             } else {
-                loadOrderSummary();
+                // Show demo message for other UPI options
+                alert('This is a demo mode. In a real app, this would open the ' + upi.toUpperCase() + ' app.');
             }
-        });
+        }
 
-        // Update order summary when cart changes
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'cartItems') {
-                loadOrderSummary();
+        async function processPayment() {
+            // If no UPI selected, use a default one
+            if (!selectedUpi) {
+                selectedUpi = 'fam';
             }
-        });
 
-        async function handleOrderSubmit(event) {
-            event.preventDefault();
-            
-            if (!selectedPayment) {
-                alert('Please select a payment method');
+            // Validate required fields
+            const name = document.getElementById('name').value;
+            const address = document.getElementById('address').value;
+            const phone = document.getElementById('phone').value;
+
+            if (!name || !address || !phone) {
+                alert('Please fill in all required fields');
                 return;
             }
 
-            if (!marker) {
-                alert('Please select your location on the map');
-                return;
-            }
-
-            const formData = new FormData(event.target);
-            
-            // Get cart items from localStorage
-            const cartData = JSON.parse(localStorage.getItem('cartItems') || '{}');
-            const productsData = JSON.parse(localStorage.getItem('products') || '[]');
-            
-            // Calculate total and format items
-            let total = 0;
-            const items = Object.entries(cartData).map(([productId, quantity]) => {
-                const product = productsData.find(p => p.id.toString() === productId.toString());
-                if (!product) return null;
-                
-                const itemTotal = parseFloat(product.price) * parseInt(quantity);
-                total += itemTotal;
-                
-                return {
-                    id: parseInt(productId),
-                    name: product.name,
-                    price: parseFloat(product.price),
-                    quantity: parseInt(quantity),
-                    total: itemTotal
-                };
-            }).filter(item => item !== null);
-
-            // Format total to match server calculation (no shipping cost)
-            total = parseFloat(total.toFixed(2));
-
-            const orderData = {
-                customer: {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    phone: formData.get('phone'),
-                    houseNumber: formData.get('houseNumber'),
-                    flatNumber: formData.get('flatNumber'),
-                    address: formData.get('address'),
-                    location: {
-                        lat: marker.getLatLng().lat,
-                        lng: marker.getLatLng().lng
-                    }
-                },
-                items: items,
-                paymentMethod: selectedPayment,
-                total: total
+            const formData = {
+                name: name,
+                address: address,
+                phone: phone,
+                payment_method: selectedUpi,
+                upi_id: '9493562061@fam',
+                items: checkoutData.items.map(item => ({
+                    product_id: item.products.id,
+                    quantity: item.quantity,
+                    price: item.products.price
+                })),
+                total: checkoutData.total,
+                user_id: user.id
             };
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/checkout', {
+                const response = await fetch('/api/checkout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(orderData)
+                    body: JSON.stringify(formData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Error placing order');
-                }
+                const data = await response.json();
 
-                // Clear cart after successful order
-                localStorage.removeItem('cartItems');
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to process payment');
+                }
                 
-                // Show success animation
-                document.body.style.overflow = 'hidden';
-                const overlay = document.getElementById('successOverlay');
-                overlay.classList.add('active');
-                
-                // Redirect after animation
-                setTimeout(() => {
-                    window.location.href = 'products.html';
-                }, 4000);
+                // Show success message
+                const successMessage = document.createElement('div');
+                successMessage.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    text-align: center;
+                    z-index: 1000;
+                `;
+                successMessage.innerHTML = `
+                    <h2 style="color: #22c55e; margin-bottom: 1rem;">Order Placed Successfully!</h2>
+                    <p style="margin-bottom: 0.5rem;">Thank you for your order.</p>
+                    <p style="color: #666; margin-bottom: 1rem;">Order ID: ${data.order_id}</p>
+                    <p style="color: #666; margin-bottom: 1rem;">Payment Method: ${selectedUpi.toUpperCase()}</p>
+                    <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">(Demo Mode)</p>
+                    <button onclick="window.location.href='orders.html'" 
+                            style="background: #1a1a1a; color: white; border: none; padding: 0.75rem 1.5rem; 
+                                   border-radius: 8px; cursor: pointer;">
+                        View Orders
+                    </button>
+                `;
+                document.body.appendChild(successMessage);
+
+                // Clear checkout data
+                localStorage.removeItem('checkout_data');
             } catch (error) {
-                console.error('Error:', error);
-                alert(error.message || 'Error placing order. Please try again.');
+                console.error('Payment error:', error);
+                alert(error.message || 'Failed to process payment. Please try again.');
             }
         }
     </script>

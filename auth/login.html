@@ -1,19 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In -tore</title>
+    <title>Login - Our Store</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {margin: 0; padding: 0; box-sizing: border-box;}
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            min-height: 100vh;
-            background: #fff;
-            display: flex;
-            overflow-x: hidden;
+        :root {
+            --primary: #1a1a1a;
+            --primary-light: #666;
+            --secondary: #f4f7ff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --bg-primary: #fff;
+            --bg-secondary: #f8f9fa;
+            --border-color: #e5e7eb;
+            --danger: #dc2626;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
+
+        [data-theme="dark"] {
+            --primary: #ffffff;
+            --primary-light: #a0a0a0;
+            --secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --border-color: #404040;
+            --danger: #ff4444;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: var(--text-primary);
+        }
+
         .auth-container {
             flex: 1;
             display: flex;
@@ -178,52 +214,63 @@
         async function handleLogin(event) {
             event.preventDefault();
             const errorMessage = document.getElementById('error-message');
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/login', {
+                // Show loading state
+                const submitButton = document.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Signing in...';
+                errorMessage.style.display = 'none';
+
+                // Call our backend API
+                const response = await fetch('/api/login', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({ email, password })
                 });
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    // Store user data properly
-                    const userData = {
-                        userId: data.userId,
-                        name: data.name,
-                        isAdmin: data.is_admin,
-                        email: email
-                    };
-                    
-                    // Save individual items
-                    localStorage.setItem('userId', data.userId);
-                    localStorage.setItem('userName', data.name);
-                    localStorage.setItem('userEmail', email);
-                    localStorage.setItem('isAdmin', data.is_admin);
-                    
-                    // Also save the complete user object for admin check
-                    localStorage.setItem('user', JSON.stringify(userData));
-
-                    // Redirect based on user type
-                    if (data.is_admin) {
-                        window.location.href = '/admin/dashboard.html';
-                    } else {
-                        window.location.href = '/users/products.html';
-                    }
-                } else {
-                    errorMessage.textContent = data.error || 'Invalid email or password';
-                    errorMessage.style.display = 'block';
+                if (!response.ok) {
+                    throw new Error(data.error || 'Invalid email or password');
                 }
+
+                // Store user data in localStorage
+                localStorage.setItem('user', JSON.stringify(data));
+
+                // Redirect to products page
+                        window.location.href = '/users/products.html';
             } catch (error) {
-                console.error('Error:', error);
-                errorMessage.textContent = ' error. Please try again.';
+                console.error('Login error:', error);
+                errorMessage.textContent = error.message;
                 errorMessage.style.display = 'block';
+            } finally {
+                // Reset button state
+                const submitButton = document.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Sign in to your account';
             }
         }
+
+        // Theme management
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Initialize theme on load
+        initTheme();
+
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                document.documentElement.setAttribute('data-theme', e.newValue);
+            }
+        });
     </script>
 </body>
 </html> 

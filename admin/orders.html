@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,6 +22,23 @@
             --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             --accent-light: #f4f7ff;
             --accent-darker: #e3e8ff;
+        }
+
+        [data-theme="dark"] {
+            --primary: #ffffff;
+            --primary-light: #a0a0a0;
+            --secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --border-color: #404040;
+            --danger: #ff4444;
+            --warning: #ffd000;
+            --success: #00e676;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            --accent-light: #2d2d2d;
+            --accent-darker: #404040;
         }
 
         * {
@@ -174,13 +191,14 @@
 
         .orders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 0;
         }
 
         .order-card {
             background: var(--bg-primary);
-            border-radius: 12px;
+            border-radius: 16px;
             box-shadow: var(--card-shadow);
             overflow: hidden;
             transition: all 0.3s ease;
@@ -196,73 +214,84 @@
         }
 
         .order-header {
-            padding: 1rem;
+            padding: 1.25rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+            background: var(--bg-secondary);
         }
 
         .order-id {
             font-weight: 600;
             color: var(--text-primary);
+            font-size: 1.1rem;
         }
 
         .order-date {
             color: var(--text-secondary);
-            font-size: 0.875rem;
+            font-size: 0.9rem;
         }
 
         .order-status {
-            padding: 0.375rem 0.75rem;
+            padding: 0.5rem 1rem;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
             text-transform: uppercase;
-            white-space: nowrap;
+            letter-spacing: 0.5px;
         }
 
         .order-status.pending {
-            background: rgba(245, 158, 11, 0.1);
+            background: rgba(245, 158, 11, 0.15);
             color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         .order-status.processing {
             background: rgba(26, 26, 26, 0.1);
             color: var(--primary);
+            border: 1px solid rgba(26, 26, 26, 0.2);
         }
 
         .order-status.completed {
-            background: rgba(44, 182, 125, 0.1);
+            background: rgba(44, 182, 125, 0.15);
             color: var(--success);
+            border: 1px solid rgba(44, 182, 125, 0.3);
         }
 
         .order-content {
-            padding: 1rem;
+            padding: 1.25rem;
             flex: 1;
             display: flex;
             flex-direction: column;
+            gap: 1.25rem;
         }
 
         .customer-info {
-            margin-bottom: 1rem;
-            flex: 1;
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
         }
 
         .info-row {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            align-items: flex-start;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
         }
 
         .info-label {
             color: var(--text-secondary);
             width: 80px;
             flex-shrink: 0;
+            font-weight: 500;
         }
 
         .info-value {
@@ -272,128 +301,101 @@
             word-break: break-word;
         }
 
-        .address-link {
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .address-link:hover {
-            color: var(--primary-light);
-            text-decoration: underline;
-        }
-
-        .address-link .material-icons-round {
-            font-size: 1rem;
-        }
-
-        .map-preview {
-            width: 100%;
-            height: 150px;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-            border: 1px solid var(--border-color);
-            display: none;
-            position: relative;
-        }
-
-        .map-preview.active {
-            display: block;
-        }
-
-        .current-location-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .current-location-btn:hover {
-            background: var(--bg-secondary);
-            transform: translateY(-2px);
-        }
-
-        .current-location-btn .material-icons-round {
-            font-size: 20px;
-            color: var(--primary);
-        }
-
         .order-items {
             background: var(--bg-secondary);
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
         }
 
         .item-row {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 0.5rem 0;
-            font-size: 0.875rem;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            gap: 1rem;
+        }
+
+        .item-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .item-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .item-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
         .item-name {
             color: var(--text-primary);
+            font-weight: 500;
         }
 
         .item-quantity {
             color: var(--text-secondary);
-            margin-left: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .item-price {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.1rem;
         }
 
         .order-total {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
+            padding: 1.25rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
         }
 
         .total-label {
             font-weight: 600;
             color: var(--text-primary);
+            font-size: 1.1rem;
         }
 
         .total-amount {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             font-weight: 600;
             color: var(--primary);
         }
 
         .order-actions {
-            padding: 1rem;
+            padding: 1.25rem;
             border-top: 1px solid var(--border-color);
             display: flex;
-            gap: 0.75rem;
+            gap: 1rem;
+            background: var(--bg-secondary);
         }
 
         .action-btn {
             flex: 1;
-            padding: 0.75rem;
+            padding: 0.875rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
             transition: all 0.2s ease;
+            font-size: 0.95rem;
         }
 
         .action-btn.primary {
@@ -407,8 +409,9 @@
         }
 
         .action-btn.secondary {
-            background: var(--bg-secondary);
+            background: var(--bg-primary);
             color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
         .action-btn.secondary:hover {
@@ -416,34 +419,56 @@
             transform: translateY(-2px);
         }
 
+        .action-btn.danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .action-btn.danger:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         .material-icons-round {
             font-size: 1.25rem;
         }
 
-        /* Mobile optimizations */
+        /* Mobile Responsive Design */
+        @media (max-width: 1024px) {
+            .orders-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .orders-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
             .navbar {
                 padding: 0.75rem;
                 position: fixed;
-                width: 100%;
                 top: 0;
                 left: 0;
+                width: 100%;
+                z-index: 1000;
+                background: var(--bg-primary);
             }
 
             .container {
                 margin-top: 4rem;
-                padding: 0.5rem;
-            }
-
-            .nav-left {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .back-btn {
                 padding: 0.75rem;
-                min-height: 44px;
-                font-size: 0.9rem;
             }
 
             .dashboard-header {
@@ -457,31 +482,31 @@
             }
 
             .orders-stats {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem;
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
                 margin-bottom: 1rem;
             }
 
             .stat-card {
-                min-width: unset;
                 padding: 0.75rem;
-                flex-direction: column;
-                text-align: center;
+                flex-direction: row;
+                align-items: center;
+                gap: 0.75rem;
             }
 
             .stat-icon {
                 width: 36px;
                 height: 36px;
-                margin: 0 auto;
+                margin: 0;
             }
 
             .stat-info h3 {
                 font-size: 1.25rem;
+                margin-bottom: 0.25rem;
             }
 
             .stat-info p {
-                font-size: 0.8rem;
+                font-size: 0.9rem;
             }
 
             .orders-grid {
@@ -490,12 +515,14 @@
             }
 
             .order-card {
-                margin: 0;
-                border-radius: 8px;
+                margin-bottom: 0.75rem;
             }
 
             .order-header {
                 padding: 0.75rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
             }
 
             .order-id {
@@ -508,7 +535,8 @@
 
             .order-status {
                 padding: 0.375rem 0.75rem;
-                font-size: 0.7rem;
+                font-size: 0.8rem;
+                align-self: flex-start;
             }
 
             .order-content {
@@ -530,15 +558,20 @@
             }
 
             .order-items {
-                margin: 0.5rem 0;
-                border-radius: 6px;
+                margin: 0.75rem 0;
+                border-radius: 8px;
             }
 
             .item-row {
                 padding: 0.5rem;
                 font-size: 0.85rem;
                 flex-wrap: wrap;
-                gap: 0.25rem;
+                gap: 0.5rem;
+            }
+
+            .item-image {
+                width: 40px;
+                height: 40px;
             }
 
             .order-total {
@@ -563,36 +596,42 @@
                 font-size: 0.9rem;
                 justify-content: center;
             }
-
-            .action-btn .material-icons-round {
-                font-size: 1.1rem;
-            }
         }
 
-        /* Small mobile optimizations */
         @media (max-width: 480px) {
-            .orders-stats {
-                grid-template-columns: 1fr;
+            .container {
+                padding: 0.5rem;
             }
 
             .stat-card {
-                flex-direction: row;
-                text-align: left;
-                align-items: center;
+                padding: 0.625rem;
             }
 
             .stat-icon {
-                margin: 0;
+                width: 32px;
+                height: 32px;
+            }
+
+            .stat-info h3 {
+                font-size: 1.125rem;
             }
 
             .order-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
+                padding: 0.625rem;
             }
 
-            .order-status {
-                align-self: flex-start;
+            .order-content {
+                padding: 0.625rem;
+            }
+
+            .item-row {
+                padding: 0.375rem;
+                font-size: 0.8rem;
+            }
+
+            .item-image {
+                width: 36px;
+                height: 36px;
             }
         }
 
@@ -674,8 +713,15 @@
         // Check if user is admin
         window.addEventListener('load', () => {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.isAdmin) {
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            
+            // Check both user objects for admin status
+            const isAdmin = user.is_admin || user.isAdmin || userData.is_admin || userData.isAdmin;
+            
+            if (!isAdmin) {
+                alert('Access denied. Admin privileges required.');
                 window.location.href = '../auth/login.html';
+                return;
             }
         });
 
@@ -718,16 +764,19 @@
         // Function to update order status
         async function updateOrderStatus(orderId, newStatus) {
             try {
-                const response = await fetch(`http://127.0.0.1:5000/api/admin/orders/${orderId}`, {
+                const response = await fetch(`/api/admin/orders/${orderId}`, {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Admin-Email': 'admin@gmail.com',
+                        'Admin-Password': 'admin'
                     },
                     body: JSON.stringify({ status: newStatus })
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to update order status');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update order status');
                 }
 
                 loadOrders(); // Refresh orders after update
@@ -737,11 +786,50 @@
             }
         }
 
+        // Function to delete order
+        async function deleteOrder(orderId) {
+            if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/orders/${orderId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Admin-Email': 'admin@gmail.com',
+                        'Admin-Password': 'admin'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to delete order');
+                }
+
+                loadOrders(); // Refresh orders after deletion
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to delete order: ' + error.message);
+            }
+        }
+
         // Function to load orders
         async function loadOrders() {
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/admin/orders');
+                const response = await fetch('/api/admin/orders', {
+                    headers: {
+                        'Admin-Email': 'admin@gmail.com',
+                        'Admin-Password': 'admin'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+
                 const orders = await response.json();
+                console.log('Received orders:', orders); // Debug log
 
                 // Update stats
                 const stats = {
@@ -751,26 +839,31 @@
                 };
 
                 const ordersGrid = document.getElementById('ordersGrid');
-                ordersGrid.innerHTML = await Promise.all(orders.map(async order => {
+                
+                if (!orders || orders.length === 0) {
+                    ordersGrid.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            <span class="material-icons-round" style="font-size: 3rem; margin-bottom: 1rem;">shopping_bag</span>
+                            <p>No orders yet</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Sort orders by date (newest first)
+                orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                const ordersHTML = orders.map(order => {
                     // Update stats count
-                    stats[order.status]++;
-
-                    // Get address from coordinates
-                    const address = order.customer.address || await getAddressFromCoordinates(
-                        order.customer.location.lat,
-                        order.customer.location.lng
-                    );
-
-                    // Format total amount
-                    const totalAmount = typeof order.total === 'string' ? 
-                        order.total : 
-                        `$${parseFloat(order.total).toFixed(2)}`;
+                    stats[order.status] = (stats[order.status] || 0) + 1;
 
                     return `
                         <div class="order-card">
                             <div class="order-header">
-                                <span class="order-id">#${order._id}</span>
-                                <span class="order-date">${formatDate(order.orderDate)}</span>
+                                <div>
+                                    <span class="order-id">#${order.id}</span>
+                                    <span class="order-date">${formatDate(order.date)}</span>
+                                </div>
                                 <span class="order-status ${order.status}">${order.status}</span>
                             </div>
                             <div class="order-content">
@@ -789,40 +882,34 @@
                                     </div>
                                     <div class="info-row">
                                         <span class="info-label">Address:</span>
-                                        <span class="info-value">
-                                            ${order.customer.houseNumber} ${order.customer.flatNumber}<br>
-                                            ${address}
-                                            <a href="https://www.google.com/maps/search/?api=1&query=${order.customer.location.lat},${order.customer.location.lng}" 
-                                               class="address-link" 
-                                               target="_blank" 
-                                               rel="noopener noreferrer">
-                                                <span class="material-icons-round">place</span>
-                                            </a>
-                                        </span>
+                                        <span class="info-value">${order.customer.address}</span>
                                     </div>
                                 </div>
                                 <div class="order-items">
                                     ${order.items.map(item => `
                                         <div class="item-row">
-                                            <span class="item-name">${item.name}</span>
-                                            <span class="item-quantity">×${item.quantity}</span>
+                                            <img src="${item.image || 'https://via.placeholder.com/50'}" alt="${item.name}" class="item-image">
+                                            <div class="item-details">
+                                                <span class="item-name">${item.name}</span>
+                                                <span class="item-quantity">Quantity: ${item.quantity}</span>
+                                            </div>
                                             <span class="item-price">$${parseFloat(item.price).toFixed(2)}</span>
                                         </div>
                                     `).join('')}
                                 </div>
                                 <div class="order-total">
                                     <span class="total-label">Total Amount</span>
-                                    <span class="total-amount">${totalAmount}</span>
+                                    <span class="total-amount">$${parseFloat(order.total).toFixed(2)}</span>
                                 </div>
                             </div>
                             <div class="order-actions">
                                 ${order.status === 'pending' ? `
-                                    <button class="action-btn primary" onclick="updateOrderStatus('${order._id}', 'processing')">
+                                    <button class="action-btn primary" onclick="updateOrderStatus('${order.id}', 'processing')">
                                         <span class="material-icons-round">local_shipping</span>
                                         Process Order
                                     </button>
                                 ` : order.status === 'processing' ? `
-                                    <button class="action-btn primary" onclick="updateOrderStatus('${order._id}', 'completed')">
+                                    <button class="action-btn primary" onclick="updateOrderStatus('${order.id}', 'completed')">
                                         <span class="material-icons-round">check_circle</span>
                                         Mark as Completed
                                     </button>
@@ -832,22 +919,32 @@
                                         Completed
                                     </button>
                                 `}
+                                <button class="action-btn danger" onclick="deleteOrder('${order.id}')">
+                                    <span class="material-icons-round">delete</span>
+                                    Delete Order
+                                </button>
                             </div>
                         </div>
                     `;
-                }));
+                }).join('');
+
+                ordersGrid.innerHTML = ordersHTML;
 
                 // Update stats display
-                document.getElementById('pendingCount').textContent = stats.pending;
-                document.getElementById('processingCount').textContent = stats.processing;
-                document.getElementById('completedCount').textContent = stats.completed;
+                document.getElementById('pendingCount').textContent = stats.pending || 0;
+                document.getElementById('processingCount').textContent = stats.processing || 0;
+                document.getElementById('completedCount').textContent = stats.completed || 0;
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error loading orders:', error);
                 document.getElementById('ordersGrid').innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: var(--danger);">
-                        <p>Failed to load orders. Please try refreshing the page.</p>
-                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">${error.message}</p>
+                    <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                        <span class="material-icons">error_outline</span>
+                        <p>Failed to load orders: ${error.message}</p>
+                        <button onclick="loadOrders()" class="btn btn-danger" style="margin-top: 1rem;">
+                            <span class="material-icons">refresh</span>
+                            Retry
+                        </button>
                     </div>
                 `;
             }
@@ -926,6 +1023,22 @@
                 mapContainer.innerHTML = '';
             }
         }
+
+        // Theme management
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Initialize theme on load
+        initTheme();
+
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                document.documentElement.setAttribute('data-theme', e.newValue);
+            }
+        });
     </script>
     <!-- Add Leaflet CSS and JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />

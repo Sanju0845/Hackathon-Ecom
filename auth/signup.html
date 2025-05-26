@@ -1,16 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account - Our Store</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #1a1a1a;
+            --primary-light: #666;
+            --secondary: #f4f7ff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --bg-primary: #fff;
+            --bg-secondary: #f8f9fa;
+            --border-color: #e5e7eb;
+            --danger: #dc2626;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        [data-theme="dark"] {
+            --primary: #ffffff;
+            --primary-light: #a0a0a0;
+            --secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --border-color: #404040;
+            --danger: #ff4444;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
         * {margin: 0; padding: 0; box-sizing: border-box;}
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
-            background: #fff;
+            background-color: var(--bg-secondary);
             display: flex;
             overflow-x: hidden;
         }
@@ -113,15 +140,22 @@
             text-decoration: none;
             font-weight: 600;
         }
-        .error {
-            background: #fef2f2;
-            border: 1px solid #fee2e2;
-            color: #dc2626;
+        .error, .success {
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 14px;
             margin-bottom: 24px;
             display: none;
+        }
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #dc2626;
+        }
+        .success {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            color: #166534;
         }
         @media (max-width: 1024px) {
             .illustration {
@@ -146,6 +180,7 @@
             <h1>Create account</h1>
             <p class="subtitle">Join us and start shopping today</p>
             <div id="error-message" class="error"></div>
+            <div id="success-message" class="success"></div>
             <form id="signupForm" onsubmit="handleSignup(event)">
                 <div class="form-group">
                     <label for="name">Full name</label>
@@ -185,31 +220,81 @@
         async function handleSignup(event) {
             event.preventDefault();
             const errorMessage = document.getElementById('error-message');
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+            const successMessage = document.getElementById('success-message');
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/register', {
+                // Reset messages
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+
+                // Show loading state
+                const submitButton = document.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Creating account...';
+
+                // Call our backend API
+                const response = await fetch('/api/register', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ name, email, password })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        password
+                    })
                 });
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    window.location.href = 'login.html';
-                } else {
-                    errorMessage.textContent = data.error || 'Error creating account';
-                    errorMessage.style.display = 'block';
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error creating account');
                 }
+
+                // Show success message
+                successMessage.textContent = data.message || 'Account created successfully!';
+                successMessage.style.display = 'block';
+
+                // Store auth data
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('user_data', JSON.stringify(data.user));
+                localStorage.setItem('auth_token', data.token || 'dummy_token');
+
+                // Redirect to products page after delay
+                setTimeout(() => {
+                    window.location.replace('../users/products.html');
+                }, 1500);
+
             } catch (error) {
-                console.error('Error:', error);
-                errorMessage.textContent = 'Network error. Please try again.';
+                console.error('Signup error:', error);
+                errorMessage.textContent = error.message || 'Error creating account';
                 errorMessage.style.display = 'block';
+            } finally {
+                // Reset button state
+                const submitButton = document.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Create your account';
             }
         }
+
+        // Theme management
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Initialize theme on load
+        initTheme();
+
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                document.documentElement.setAttribute('data-theme', e.newValue);
+            }
+        });
     </script>
 </body>
 </html> 

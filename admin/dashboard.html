@@ -1,12 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Our Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="admin-check.js"></script>
     <style>
+        :root {
+            --primary: #1a1a1a;
+            --primary-light: #666;
+            --secondary: #f4f7ff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --bg-primary: #fff;
+            --bg-secondary: #f8f9fa;
+            --border-color: #e5e7eb;
+            --danger: #dc2626;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            --success: #2cb67d;
+            --warning: #f59e0b;
+            --info: #2196F3;
+        }
+
+        [data-theme="dark"] {
+            --primary: #ffffff;
+            --primary-light: #a0a0a0;
+            --secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --border-color: #404040;
+            --danger: #ff4444;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            --success: #00e676;
+            --warning: #ffd000;
+            --info: #64b5f6;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,167 +48,215 @@
         }
 
         body {
-            background-color: #f8f9fa;
+            background-color: var(--bg-secondary);
             min-height: 100vh;
+            color: var(--text-primary);
+            display: flex;
         }
 
-        .navbar {
-            background: white;
-            padding: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-primary);
+            height: 100vh;
+            position: fixed;
+            left: 0;
             top: 0;
-            z-index: 100;
-            flex-wrap: wrap;
-            gap: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
         }
 
-        .nav-left {
+        .sidebar-header {
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .store-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .nav-menu {
             display: flex;
+            flex-direction: column;
             gap: 0.5rem;
-            flex-wrap: wrap;
+            flex: 1;
         }
 
         .nav-link {
-            color: #1a1a1a;
+            color: var(--text-primary);
             text-decoration: none;
             font-weight: 500;
             padding: 0.75rem 1rem;
-            border-radius: 6px;
+            border-radius: 8px;
             transition: all 0.2s;
-            min-height: 44px;
             display: flex;
             align-items: center;
-            white-space: nowrap;
+            gap: 0.75rem;
         }
 
         .nav-link:hover {
-            background: #f0f0f0;
+            background: var(--bg-secondary);
         }
 
         .nav-link.active {
-            background: #e3f2fd;
-            color: #1976D2;
+            background: var(--info);
+            color: white;
         }
 
         .nav-link i {
-            vertical-align: middle;
-            font-size: 1.2rem;
-            margin-right: 0.5rem;
+            font-size: 1.25rem;
         }
 
-        .logout-btn {
-            color: #dc3545;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-            padding: 0.75rem 1rem;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
         }
 
-        .logout-btn:hover {
-            color: #c82333;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 1rem auto;
-            padding: 0 1rem;
-        }
-
-        .header-actions {
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .stats {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
+        /* Main Content Styles */
+        .main-content {
             flex: 1;
-            min-width: 140px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-left: 280px;
+            padding: 2rem;
         }
 
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
             margin-bottom: 0.5rem;
         }
 
-        .stat-value {
-            color: #1a1a1a;
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.5rem;
-            font-weight: 500;
+        }
+
+        .stat-icon.products {
+            background: rgba(33, 150, 243, 0.1);
+            color: var(--info);
+        }
+
+        .stat-icon.stock {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-icon.orders {
+            background: rgba(44, 182, 125, 0.1);
+            color: var(--success);
+        }
+
+        .stat-info h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .stat-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .add-product-btn {
-            background: #2196F3;
+            background: var(--info);
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            cursor: pointer;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: background-color 0.2s;
-            min-height: 44px;
-            width: 100%;
-            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
         .add-product-btn:hover {
-            background: #1976D2;
+            background: var(--primary);
+            transform: translateY(-2px);
         }
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .product-card {
-            background: white;
+            background: var(--bg-primary);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s;
         }
 
         .product-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .product-image {
             position: relative;
             padding-top: 75%;
-            overflow: hidden;
         }
 
         .product-image img {
@@ -196,53 +277,46 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 0.75rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .product-title {
-            flex: 1;
-            min-width: 200px;
         }
 
         .product-name {
-            color: #1a1a1a;
-            font-size: 1rem;
-            font-weight: 500;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1rem;
             margin-bottom: 0.25rem;
         }
 
         .product-price {
-            color: #2196F3;
+            color: var(--info);
             font-weight: 600;
+            font-size: 1.1rem;
         }
 
         .product-description {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.9rem;
-            line-height: 1.4;
             margin-bottom: 1rem;
+            line-height: 1.5;
         }
 
         .product-stock {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 1rem;
             padding: 0.5rem;
-            background: #f8f9fa;
+            background: var(--bg-secondary);
             border-radius: 8px;
-            flex-wrap: wrap;
+            margin-bottom: 1rem;
         }
 
         .stock-label {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.9rem;
         }
 
         .stock-value {
             font-weight: 500;
-            color: #1a1a1a;
+            color: var(--text-primary);
         }
 
         .stock-status {
@@ -253,18 +327,18 @@
         }
 
         .stock-status.high {
-            background: #e8f5e9;
-            color: #4caf50;
+            background: rgba(44, 182, 125, 0.1);
+            color: var(--success);
         }
 
         .stock-status.medium {
-            background: #fff3e0;
-            color: #ff9800;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
         }
 
         .stock-status.low {
-            background: #ffebee;
-            color: #f44336;
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--danger);
         }
 
         .card-actions {
@@ -272,116 +346,117 @@
             gap: 0.5rem;
         }
 
+        .action-btn {
+            flex: 1;
+                padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            }
+
+        .action-btn.edit {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            }
+
+        .action-btn.delete {
+            background: var(--danger);
+            color: white;
+            }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+                padding: 1rem;
+            }
+
+            .sidebar-header {
+                padding-bottom: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .store-logo span {
+                display: none;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .logout-btn span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+
         @media (max-width: 768px) {
-            .navbar {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: fixed;
+                bottom: 0;
+                top: auto;
                 padding: 0.75rem;
             }
 
-            .nav-left {
-                width: 100%;
-                justify-content: center;
+            .sidebar-header {
+                display: none;
             }
 
             .nav-menu {
-                width: 100%;
-                justify-content: center;
-            }
+                flex-direction: row;
+                justify-content: space-around;
+        }
 
             .nav-link {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .logout-btn {
-                width: 100%;
-                justify-content: center;
-                text-align: center;
-            }
-
-            .container {
-                margin: 0.5rem auto;
-            }
-
-            .header-actions {
                 flex-direction: column;
-            }
-
-            .stats {
-                flex-direction: column;
-            }
-
-            .stat-card {
-                width: 100%;
-            }
-
-            .products-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem;
-            }
-
-            .product-card {
-                margin-bottom: 0.5rem;
-            }
-
-            .product-image {
-                padding-top: 100%;
-            }
-
-            .product-info {
-                padding: 0.75rem;
-            }
-
-            .product-name {
-                font-size: 0.9rem;
-            }
-
-            .product-description {
-                font-size: 0.8rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .product-stock {
-                padding: 0.25rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .card-actions {
-                flex-direction: column;
-            }
-
-            .card-actions button {
-                width: 100%;
-                min-height: 44px;
-                font-size: 0.9rem;
                 padding: 0.5rem;
+                font-size: 0.8rem;
             }
+
+            .nav-link i {
+                font-size: 1.5rem;
+            }
+
+            .sidebar-footer {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-bottom: 80px;
+                padding: 1rem;
         }
 
-        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
             .products-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem;
-            }
+                grid-template-columns: 1fr;
         }
 
-        /* Touch-friendly improvements */
-        @media (hover: none) {
-            .nav-link,
-            .logout-btn,
-            .add-product-btn,
-            .card-actions button {
-                -webkit-tap-highlight-color: transparent;
-            }
+            .section-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+        }
 
-            .product-card:hover {
-                transform: none;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-
-            input[type="text"],
-            input[type="number"],
-            textarea {
-                font-size: 16px;
+            .add-product-btn {
+                width: 100%;
             }
         }
 
@@ -569,72 +644,257 @@
             background: var(--border-color);
         }
 
-        @media (max-width: 768px) {
-            .modal-content {
-                max-height: 85vh;
-            }
+        .form-group input:invalid,
+        .form-group textarea:invalid {
+            border-color: #dc3545;
+        }
 
-            .modal-header h2 {
-                font-size: 1.25rem;
-            }
+        .form-group input:focus:invalid,
+        .form-group textarea:focus:invalid {
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
 
-            .modal-body {
-                padding: 1rem;
-            }
+        .form-group input.invalid,
+        .form-group textarea.invalid {
+            border-color: #dc3545;
+            animation: shake 0.5s;
+        }
 
-            .form-group {
-                margin-bottom: 1rem;
-            }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
 
-            .btn {
-                padding: 0.75rem 1rem;
-            }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Ensure modal content is scrollable on mobile */
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Improve form input accessibility */
+        .form-group input,
+        .form-group textarea {
+            font-size: 16px;
+            -webkit-appearance: none;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        /* Fix modal scrolling on iOS */
+        .modal.active {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .orders-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .order-items {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .order-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .status-select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .order-total {
+            font-weight: 600;
+            color: #2196F3;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-processing {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-delivered {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #c62828;
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="nav-left">
-            <h1>Admin Dashboard</h1>
-            <nav class="nav-menu">
-                <a href="/admin/dashboard.html" class="nav-link active">
-                    <i class="material-icons">dashboard</i>
-                    Dashboard
-                </a>
-                <a href="/admin/orders.html" class="nav-link">
-                    <i class="material-icons">shopping_cart</i>
-                    Orders
-                </a>
-            </nav>
-        </div>
-        <a href="#" class="logout-btn" onclick="handleLogout()">
-            <span class="material-icons">logout</span>
-            Logout
-        </a>
-    </div>
-
-    <div class="container">
-        <div class="header-actions">
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">Total Products</div>
-                    <div class="stat-value" id="totalProducts">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Low Stock Items</div>
-                    <div class="stat-value" id="lowStockItems">0</div>
-                </div>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="store-logo">
+                <i class="material-icons">store</i>
+                <span>Admin Panel</span>
             </div>
-            <button class="add-product-btn" onclick="openModal()">
-                <span class="material-icons">add</span>
-                Add Product
-            </button>
         </div>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-link active">
+                    <i class="material-icons">dashboard</i>
+                <span>Dashboard</span>
+                </a>
+                <a href="orders.html" class="nav-link">
+                    <i class="material-icons">shopping_cart</i>
+                <span>Orders</span>
+                </a>
+            <a href="#" class="nav-link">
+                <i class="material-icons">people</i>
+                <span>Customers</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="material-icons">settings</i>
+                <span>Settings</span>
+        </a>
+
+    </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Dashboard Overview</h1>
+            <p class="page-subtitle">Welcome back! Here's what's happening with your store.</p>
+        </div>
+
+        <div class="stats-grid">
+                <div class="stat-card">
+                <div class="stat-icon products">
+                    <i class="material-icons">inventory_2</i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalProducts">0</h3>
+                    <p>Total Products</p>
+                </div>
+                </div>
+                <div class="stat-card">
+                <div class="stat-icon stock">
+                    <i class="material-icons">warning</i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="lowStockItems">0</h3>
+                    <p>Low Stock Items</p>
+            </div>
+        </div>
+            <div class="stat-card">
+                <div class="stat-icon orders">
+                    <i class="material-icons">shopping_bag</i>
+        </div>
+                <div class="stat-info">
+                    <h3 id="totalOrders">0</h3>
+                    <p>Total Orders</p>
+            </div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2 class="section-title">Product Management</h2>
+            <button class="add-product-btn" onclick="openModal()">
+                <i class="material-icons">add</i>
+                Add New Product
+            </button>
+    </div>
 
         <div class="products-grid" id="productsGrid">
-            <!-- Products will be loaded here dynamically -->
+            <!-- Products will be loaded here -->
         </div>
-    </div>
+    </main>
 
     <!-- Product Modal -->
     <div class="modal" id="productModal">
@@ -646,35 +906,35 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="productForm">
-                    <input type="hidden" id="productId">
-                    <div class="form-group">
-                        <label for="name">Product Name</label>
-                        <input type="text" id="name" required>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" required>
                         <div class="hint">Enter a descriptive name for the product</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="description">Description</label>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
                         <textarea id="description" required></textarea>
                         <div class="hint">Provide detailed information about the product</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="price">Price ($)</label>
-                        <input type="number" id="price" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price ($)</label>
+                    <input type="number" id="price" step="0.01" min="0" required>
                         <div class="hint">Set the price in USD</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="stock">Stock Quantity</label>
-                        <input type="number" id="stock" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="stock">Stock Quantity</label>
+                    <input type="number" id="stock" min="0" required>
                         <div class="hint">Enter the available quantity</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="image">Image URL</label>
+                </div>
+                <div class="form-group">
+                    <label for="image">Image URL</label>
                         <input type="url" id="image" required onchange="updateImagePreview(this)">
                         <div class="hint">Provide a direct link to the product image</div>
                         <div class="image-preview empty" id="imagePreview"></div>
-                    </div>
-                </form>
+                </div>
+            </form>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -689,27 +949,39 @@
     <script>
         // Check if user is admin
         window.addEventListener('load', () => {
+            console.log('Checking admin status...'); // Add debug logging
+            
+            // Get user data from both possible locations
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.isAdmin) {
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            
+            console.log('User data:', userData); // Add debug logging
+            console.log('Legacy user data:', user); // Add debug logging
+            
+            // Check admin status from either source
+            const isAdmin = user.is_admin || userData.is_admin;
+            console.log('Is admin:', isAdmin); // Add debug logging
+            
+            if (!isAdmin) {
+                console.log('Not admin, redirecting to login...'); // Add debug logging
                 window.location.href = '../auth/login.html';
+                return;
             }
+            
+            console.log('Admin verified, loading products...'); // Add debug logging
             loadProducts();
         });
 
         function handleLogout() {
             // Clear all user data from localStorage
-            localStorage.removeItem('user');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('isAdmin');
+            localStorage.clear();
             
             // Redirect to login page
             window.location.href = '../auth/login.html';
         }
 
         function loadProducts() {
-            fetch('http://127.0.0.1:5000/api/admin/products')
+            fetch('/api/products')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Failed to load products');
@@ -752,10 +1024,11 @@
             grid.innerHTML = products.map(product => {
                 const productId = product.id || product._id; // Handle both id formats
                 const stockValue = product.stock || 0;
+                const imageUrl = product.image_url || product.image || 'https://via.placeholder.com/300x200?text=No+Image';
                 return `
                     <div class="product-card">
                         <div class="product-image">
-                            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                            <img src="${imageUrl}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                         </div>
                         <div class="product-info">
                             <div class="product-header">
@@ -773,11 +1046,11 @@
                                 </span>
                             </div>
                             <div class="card-actions">
-                                <button class="edit-btn" onclick='editProduct(${JSON.stringify(product)})'>
+                                <button class="btn btn-secondary" onclick='editProduct(${JSON.stringify(product)})'>
                                     <span class="material-icons">edit</span>
                                     Edit
                                 </button>
-                                <button class="delete-btn" onclick="deleteProduct('${productId}')">
+                                <button class="btn btn-danger" onclick="deleteProduct('${productId}')">
                                     <span class="material-icons">delete</span>
                                     Delete
                                 </button>
@@ -825,7 +1098,7 @@
                 document.getElementById('description').value = product.description;
                 document.getElementById('price').value = product.price;
                 document.getElementById('stock').value = product.stock || 0;
-                document.getElementById('image').value = product.image;
+                document.getElementById('image').value = product.image_url || product.image || '';
                 updateImagePreview(document.getElementById('image'));
             } else {
                 title.textContent = 'Add New Product';
@@ -856,7 +1129,7 @@
 
         function deleteProduct(productId) {
             if (confirm('Are you sure you want to delete this product?')) {
-                fetch(`http://127.0.0.1:5000/api/admin/products/${productId}`, {
+                fetch(`/api/products/${productId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -866,7 +1139,7 @@
                     if (!response.ok) {
                         throw new Error('Failed to delete product');
                     }
-                    loadProducts();
+                        loadProducts();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -879,21 +1152,19 @@
             const form = document.getElementById('productForm');
             if (form.checkValidity()) {
                 const productData = {
-                    name: document.getElementById('name').value,
-                    description: document.getElementById('description').value,
+                    name: document.getElementById('name').value.trim(),
+                    description: document.getElementById('description').value.trim(),
                     price: parseFloat(document.getElementById('price').value),
                     stock: parseInt(document.getElementById('stock').value),
-                    image: document.getElementById('image').value
+                    image_url: document.getElementById('image').value.trim()
                 };
-
                 const productId = document.getElementById('productId').value;
-                
-                const url = productId ? 
-                    `http://127.0.0.1:5000/api/admin/products/${productId}` : 
-                    'http://127.0.0.1:5000/api/admin/products';
-                
-                const method = productId ? 'PUT' : 'POST';
-
+                let url = '/api/admin/products';
+                let method = 'POST';
+                if (productId) {
+                    url = `/api/admin/products/${productId}`;
+                    method = 'PUT';
+                }
                 fetch(url, {
                     method: method,
                     headers: {
@@ -919,6 +1190,14 @@
                     alert('Error saving product: ' + error.message);
                 });
             } else {
+                // Highlight invalid fields
+                Array.from(form.elements).forEach(element => {
+                    if (!element.validity.valid) {
+                        element.classList.add('invalid');
+                    } else {
+                        element.classList.remove('invalid');
+                    }
+                });
                 form.reportValidity();
             }
         }
@@ -934,6 +1213,58 @@
         document.querySelector('.modal-content').addEventListener('click', (e) => {
             e.stopPropagation();
         });
+
+        // Theme management
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Initialize theme on load
+        initTheme();
+
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                document.documentElement.setAttribute('data-theme', e.newValue);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/products')
+                .then(response => response.json())
+                .then(products => {
+                    const grid = document.getElementById('productsGrid');
+                    if (!products || products.length === 0) {
+                        grid.innerHTML = '<p style="text-align:center;">No products available.</p>';
+                        return;
+                    }
+                    grid.innerHTML = products.map(product => `
+                        <div class="product-card">
+                            <div class="product-image">
+                                <img src="${product.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${product.name}">
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name">${product.name}</div>
+                                <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
+                                <button class="add-to-cart" onclick="addToCart('${product.id}')">
+                                    <span class="material-icons-round">add_shopping_cart</span>
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    document.getElementById('productsGrid').innerHTML = '<p style="color:red;">Failed to load products.</p>';
+                    console.error('Error loading products:', error);
+                });
+        });
+
+        function addToCart(productId) {
+            // Implement your add to cart logic here
+            alert('Added to cart: ' + productId);
+        }
     </script>
 </body>
 </html> 

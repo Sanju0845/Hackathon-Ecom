@@ -101,8 +101,7 @@ async function updateCartDisplay() {
     const cartTotal = document.getElementById('cartTotal');
     
     try {
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
+        if (!checkLogin()) {
             cartItems.innerHTML = `
                 <div class="empty-cart">
                     <span class="material-icons-round">shopping_cart</span>
@@ -114,8 +113,11 @@ async function updateCartDisplay() {
             return;
         }
 
-        // Get cart items from localStorage
-        let cartData = JSON.parse(localStorage.getItem('cartItems') || '{}');
+        // Get cart items from localStorage (try both storage keys)
+        let cartData = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (Object.keys(cartData).length === 0) {
+            cartData = JSON.parse(localStorage.getItem('cartItems') || '{}');
+        }
         
         if (Object.keys(cartData).length === 0) {
             cartItems.innerHTML = `
@@ -198,6 +200,26 @@ function updateCartCount() {
     }
 }
 
+// Function to check if user is logged in
+function checkLogin() {
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    const userData = localStorage.getItem('user_data');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // Check both new and old auth methods
+    if ((!isAuthenticated && !userData) && !user.id) {
+        return false;
+    }
+    return true;
+}
+
+// Function to get user ID
+function getUserId() {
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return userData.id || user.id;
+}
+
 async function addToCart(productId, event) {
     try {
         if (!event) {
@@ -207,9 +229,9 @@ async function addToCart(productId, event) {
         event.preventDefault();
         event.stopPropagation();
         
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            alert('Please log in to add items to cart');
+        if (!checkLogin()) {
+            // Store the current URL to redirect back after login
+            localStorage.setItem('redirectAfterLogin', window.location.href);
             window.location.href = '/auth/login.html';
             return;
         }
@@ -224,7 +246,7 @@ async function addToCart(productId, event) {
         const quantity = quantityElement ? parseInt(quantityElement.textContent) || 1 : 1;
 
         // Get existing cart or initialize new one
-        let cartData = JSON.parse(localStorage.getItem('cartItems') || '{}');
+        let cartData = JSON.parse(localStorage.getItem('cart') || '{}');
         
         // Add or update item quantity
         if (cartData[productId]) {
@@ -233,8 +255,9 @@ async function addToCart(productId, event) {
             cartData[productId] = quantity;
         }
 
-        // Save updated cart
-        localStorage.setItem('cartItems', JSON.stringify(cartData));
+        // Save updated cart in both locations for compatibility
+        localStorage.setItem('cart', JSON.stringify(cartData));
+        localStorage.setItem('cartItems', JSON.stringify(cartData));  // For compatibility
         
         // Visual feedback
         const addButton = event.target.closest('.add-to-cart') || event.target;
@@ -250,7 +273,7 @@ async function addToCart(productId, event) {
         // Update cart display
         await updateCartDisplay();
         
-        // Open cart panel
+        // Open cart
         openCart();
 
     } catch (error) {
@@ -320,7 +343,11 @@ async function removeFromCart(productId) {
 }
 
 function checkout() {
-    const cartData = JSON.parse(localStorage.getItem('cartItems') || '{}');
+    // Get cart data from both possible storage locations
+    let cartData = JSON.parse(localStorage.getItem('cart') || '{}');
+    if (Object.keys(cartData).length === 0) {
+        cartData = JSON.parse(localStorage.getItem('cartItems') || '{}');
+    }
     
     if (Object.keys(cartData).length === 0) {
         alert('Your cart is empty!');
@@ -330,14 +357,20 @@ function checkout() {
     // Convert cart data for checkout
     const checkoutItems = Object.entries(cartData).map(([productId, quantity]) => {
         const product = products.find(p => p.id.toString() === productId.toString());
+        if (!product) return null;
         return {
             id: productId,
             name: product.name,
             price: product.price,
             quantity: quantity,
-            image: product.image || 'https://via.placeholder.com/300'
+            image: product.image || product.image_url || 'https://via.placeholder.com/300'
         };
-    });
+    }).filter(item => item !== null);
+
+    if (checkoutItems.length === 0) {
+        alert('Error preparing checkout. Please try again.');
+        return;
+    }
 
     // Save checkout items
     localStorage.setItem('checkoutItems', JSON.stringify(checkoutItems));
@@ -409,27 +442,27 @@ function displayProducts(productsToShow) {
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
                 <p class="product-description">${product.description}</p>
-                <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
+                    <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
                 <div class="product-stock ${product.stock < 5 ? 'low-stock' : ''}">
                     ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                 </div>
                 <div class="product-actions">
-                    <div class="quantity-controls">
+                <div class="quantity-controls">
                         <button onclick="updateQuantity('${product.id}', -1, event)" 
                                 class="quantity-btn" ${product.stock === 0 ? 'disabled' : ''}>
-                            <span class="material-icons-round">remove</span>
-                        </button>
+                        <span class="material-icons-round">remove</span>
+                    </button>
                         <span id="quantity-${product.id}" class="quantity">1</span>
                         <button onclick="updateQuantity('${product.id}', 1, event)" 
                                 class="quantity-btn" ${product.stock === 0 ? 'disabled' : ''}>
-                            <span class="material-icons-round">add</span>
-                        </button>
-                    </div>
+                        <span class="material-icons-round">add</span>
+                    </button>
+                </div>
                     <button onclick="addToCart('${product.id}', event)" 
                             class="add-to-cart" ${product.stock === 0 ? 'disabled' : ''}>
-                        <span class="material-icons-round">add_shopping_cart</span>
-                        Add to Cart
-                    </button>
+                    <span class="material-icons-round">add_shopping_cart</span>
+                    Add to Cart
+                </button>
                 </div>
             </div>
         </div>
@@ -522,34 +555,30 @@ function closeProductDetails() {
     }, 300);
 }
 
-// Function to check if user is logged in
-function checkLogin() {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-        console.log('User not logged in');
-        return false;
-    }
-    console.log('User logged in with ID:', userId);
-    return true;
-}
-
 // Update user info in account dropdown
 function updateUserInfo() {
     const userName = document.getElementById('userName');
     const userEmail = document.getElementById('userEmail');
     
-    const storedName = localStorage.getItem('userName');
-    const storedEmail = localStorage.getItem('userEmail');
+    try {
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
     
-    if (storedName) {
-        userName.textContent = storedName;
+        if (userData.name) {
+            userName.textContent = userData.name;
+        } else if (userData.email) {
+            userName.textContent = userData.email;
     } else {
         userName.textContent = 'Guest User';
     }
     
-    if (storedEmail) {
-        userEmail.textContent = storedEmail;
+        if (userData.email) {
+            userEmail.textContent = userData.email;
     } else {
+            userEmail.textContent = 'Signed in';
+        }
+    } catch (error) {
+        console.error('Error updating user info:', error);
+        userName.textContent = 'Guest User';
         userEmail.textContent = 'Signed in';
     }
 }
@@ -579,11 +608,8 @@ function toggleAccountMenu() {
 }
 
 function logout() {
-    // Clear user data
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('cartItems');
+    // Clear all auth data
+    localStorage.clear();
     
     // Show logout feedback
     const feedback = document.createElement('div');
@@ -602,37 +628,31 @@ function logout() {
     feedback.innerHTML = `
         <span class="material-icons-round" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">check_circle</span>
         <p style="margin-bottom: 1rem;">Successfully logged out!</p>
-        <p style="color: var(--text-secondary);">Redirecting to homepage...</p>
+        <p style="color: var(--text-secondary);">Redirecting to login...</p>
     `;
     document.body.appendChild(feedback);
 
-    // Redirect to index page after a short delay
+    // Redirect to login page after a short delay
     setTimeout(() => {
-        window.location.href = '/index.html';
+        window.location.href = '../auth/login.html';
     }, 1500);
 }
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        console.log('Page loaded, checking login status...');
-        const userId = localStorage.getItem('userId');
-        console.log('User ID:', userId);
-        
+        // Load products first
         await loadProducts();
         
-        // Update cart and user info if logged in
-        if (userId) {
-            console.log('User is logged in, loading cart...');
+        // Then check login and update cart
+        if (checkLogin()) {
             await Promise.all([
                 updateCartDisplay(),
                 updateCartCount()
             ]);
             updateUserInfo();
-        } else {
-            console.log('User not logged in');
-            window.location.href = '/auth/login.html';
         }
+        
     } catch (error) {
         console.error('Error during initialization:', error);
     }

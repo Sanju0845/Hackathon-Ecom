@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Our Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: #1a1a1a;
+        }
+
+        .orders-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-id {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .order-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .order-items {
+            margin-bottom: 1rem;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-price {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .order-total {
+            font-weight: 600;
+            color: #2196F3;
+        }
+
+        .order-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-processing {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-delivered {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .empty-orders .material-icons-round {
+            font-size: 3rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .empty-orders p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .shop-now-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #2196F3;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .shop-now-btn:hover {
+            background: #1976D2;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .order-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="products.html" class="back-btn">
+                <span class="material-icons-round">arrow_back</span>
+                Back to Shopping
+            </a>
+            <h1>My Orders</h1>
+        </div>
+
+        <div id="ordersGrid" class="orders-grid">
+            <!-- Orders will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        function checkLogin() {
+            const isAuthenticated = localStorage.getItem('isAuthenticated');
+            const userData = localStorage.getItem('user_data');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if ((!isAuthenticated && !userData) && !user.id) {
+                window.location.href = '../auth/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        async function loadOrders() {
+            if (!checkLogin()) return;
+
+            const ordersGrid = document.getElementById('ordersGrid');
+            
+            try {
+                // Get user data
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                // Check if user is admin
+                const isAdmin = user.is_admin || userData.is_admin;
+                const userId = isAdmin ? 'admin' : (userData.id || user.id);
+
+                if (!userId) {
+                    throw new Error('User ID not found');
+                }
+
+                // Fetch orders
+                const response = await fetch(`/api/orders?user_id=${userId}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to load orders');
+                }
+
+                const orders = await response.json();
+
+                if (!orders || orders.length === 0) {
+                    ordersGrid.innerHTML = `
+                        <div class="empty-orders">
+                            <span class="material-icons-round">shopping_bag</span>
+                            <p>You haven't placed any orders yet</p>
+                            <a href="products.html" class="shop-now-btn">
+                                <span class="material-icons-round">shopping_cart</span>
+                                Start Shopping
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Sort orders by date (newest first)
+                orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                const ordersHTML = orders.map(order => {
+                    const statusClass = {
+                        'pending': 'status-pending',
+                        'processing': 'status-processing',
+                        'completed': 'status-delivered',
+                        'cancelled': 'status-cancelled'
+                    }[order.status] || 'status-pending';
+
+                    const itemsHTML = order.order_items.map(item => {
+                        // Add checks for item.products being defined
+                        const productName = item.products?.name || 'Unknown Product';
+                        const productImageUrl = item.products?.image_url || 'https://via.placeholder.com/50';
+                        const itemPrice = parseFloat(item.price_at_time || item.products?.price || 0).toFixed(2);
+
+                        return `
+                        <div class="order-item">
+                            <img src="${productImageUrl}" 
+                                 alt="${productName}" 
+                                 class="item-image"
+                                 onerror="this.src='https://via.placeholder.com/50'">
+                            <div class="item-details">
+                                <div class="item-name">${productName}</div>
+                                <div class="item-price">₹${itemPrice} × ${item.quantity}</div>
+                            </div>
+                        </div>
+                    `;
+                    }).join('');
+
+                    return `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-id">Order #${order.id}</div>
+                                <div class="order-date">${new Date(order.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div class="order-items">
+                                ${itemsHTML}
+                            </div>
+                            <div class="order-footer">
+                                <div class="order-total">Total: ₹${parseFloat(order.total).toFixed(2)}</div>
+                                <div class="order-status ${statusClass}">
+                                    ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                ordersGrid.innerHTML = ordersHTML;
+
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                ordersGrid.innerHTML = `
+                    <div class="empty-orders" style="color: #dc3545;">
+                        <span class="material-icons-round">error_outline</span>
+                        <p>${error.message}</p>
+                        <button onclick="loadOrders()" class="shop-now-btn" style="background: #dc3545;">
+                            <span class="material-icons-round">refresh</span>
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Load orders when page loads
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html> 
