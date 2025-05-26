@@ -30,9 +30,9 @@ def register():
         response = supabase.table('users').insert({
             'email': data['email'],
             'password': data['password'],
-            'full_name': data.get('name', ''),
-            'phone_number': data.get('phone', ''),
-            'shipping_address': data.get('address', '')
+            'name': data.get('name', ''),
+            'phone': data.get('phone', ''),
+            'address': data.get('address', '')
         }).execute()
         
         if response.data:
@@ -40,18 +40,28 @@ def register():
             return jsonify({
                 'id': user['id'],
                 'email': user['email'],
-                'name': user.get('full_name', ''),
-                'phone': user.get('phone_number', ''),
-                'address': user.get('shipping_address', '')
+                'name': user.get('name', ''),
+                'phone': user.get('phone', ''),
+                'address': user.get('address', '')
             })
         return jsonify({'error': 'Failed to create user'}), 400
     except Exception as e:
+        print('Registration error:', str(e))
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json
     try:
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+            
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        if 'email' not in data or 'password' not in data:
+            return jsonify({'error': 'Email and password are required'}), 400
+
         # Check if it's an admin login
         if data['email'] == 'admin@gmail.com' and data['password'] == 'admin':
             print('Admin login detected')  # Debug log
@@ -60,33 +70,39 @@ def login():
                 'email': 'admin@gmail.com',
                 'name': 'Admin',
                 'is_admin': True,
-                'role': 'admin'  # Added role field
+                'role': 'admin'
             })
         
         # Regular user login
-        response = supabase.table('users').select("*").eq('email', data['email']).eq('password', data['password']).execute()
-        
-        if response.data:
+        try:
+            response = supabase.table('users').select("*").eq('email', data['email']).eq('password', data['password']).execute()
+            
+            if not response.data:
+                return jsonify({'error': 'Invalid credentials'}), 401
+                
             user = response.data[0]
-                return jsonify({
+            return jsonify({
                 'id': user['id'],
                 'email': user['email'],
-                'name': user.get('full_name', ''),
-                'phone': user.get('phone_number', ''),
-                'address': user.get('shipping_address', ''),
+                'name': user.get('name', ''),
+                'phone': user.get('phone', ''),
+                'address': user.get('address', ''),
                 'is_admin': False,
-                'role': 'user'  # Added role field
+                'role': 'user'
             })
-            return jsonify({'error': 'Invalid credentials'}), 401
+        except Exception as supabase_error:
+            print('Supabase error:', str(supabase_error))
+            return jsonify({'error': 'Database error occurred'}), 500
+            
     except Exception as e:
-        print('Login error:', str(e))  # Debug log
-        return jsonify({'error': str(e)}), 400
+        print('Login error:', str(e))
+        return jsonify({'error': 'An unexpected error occurred'}), 500
 
 @app.route('/api/products', methods=['GET'])
 def get_products():
     try:
-                response = supabase.table('products').select("*").execute()
-                return jsonify(response.data)
+        response = supabase.table('products').select("*").execute()
+        return jsonify(response.data)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -168,9 +184,9 @@ def checkout():
         # Create order with exact column names from database schema
         order_response = supabase.table('orders').insert({
             'user_id': data['user_id'],
-                        'total': data['total'],
-                        'status': 'pending'
-                    }).execute()
+            'total': data['total'],
+            'status': 'pending'
+        }).execute()
                     
         if not order_response.data:
             return jsonify({'error': 'Failed to create order'}), 400
@@ -178,15 +194,15 @@ def checkout():
         order = order_response.data[0]
         
         # Create order items
-                    for item in data['items']:
+        for item in data['items']:
             supabase.table('order_items').insert({
                 'order_id': order['id'],
                 'product_id': item['product_id'],  # Use product_id from the request
-                            'quantity': item['quantity'],
+                'quantity': item['quantity'],
                 'price_at_time': item['price']  # Use price from the request
             }).execute()
 
-                    # Clear cart
+        # Clear cart
         supabase.table('cart_items').delete().eq('user_id', data['user_id']).execute()
         
         return jsonify({
@@ -194,7 +210,7 @@ def checkout():
             'status': 'success',
             'message': 'Order placed successfully'
         })
-                except Exception as e:
+    except Exception as e:
         print('Checkout error:', str(e))  # Add logging
         return jsonify({'error': str(e)}), 400
 
@@ -269,11 +285,11 @@ def admin_orders():
             user = order.get('users', {})
             order_items = order.get('order_items', [])
             transformed_order = {
-                                'id': order['id'],
+                'id': order['id'],
                 'date': order['created_at'],
                 'status': order['status'],
-                                'total': order['total'],
-                                'customer': {
+                'total': order['total'],
+                'customer': {
                     'name': user.get('full_name', ''),
                     'email': user.get('email', ''),
                     'phone': user.get('phone_number', ''),
@@ -281,8 +297,8 @@ def admin_orders():
                 },
                 'items': [{
                     'name': item['products']['name'],
-                                        'price': item['price_at_time'],
-                                        'quantity': item['quantity'],
+                    'price': item['price_at_time'],
+                    'quantity': item['quantity'],
                     'image': item['products'].get('image_url', '')
                 } for item in order_items]
             }
@@ -295,11 +311,11 @@ def admin_orders():
 def admin_order(id):
     try:
         if request.method == 'DELETE':
-                    # First delete related order items
+            # First delete related order items
             supabase.table('order_items').delete().eq('order_id', id).execute()
-                    # Then delete the order
+            # Then delete the order
             supabase.table('orders').delete().eq('id', id).execute()
-                    return jsonify({'message': 'Order deleted successfully'})
+            return jsonify({'message': 'Order deleted successfully'})
         
         # PATCH request for updating order status
         data = request.json
@@ -307,12 +323,12 @@ def admin_order(id):
             return jsonify({'error': 'Status is required'}), 400
             
         # Update order status
-                    response = supabase.table('orders').update({
+        response = supabase.table('orders').update({
             'status': data['status']
         }).eq('id', id).execute()
 
-                    if not response.data:
-                        return jsonify({'error': 'Order not found'}), 404
+        if not response.data:
+            return jsonify({'error': 'Order not found'}), 404
 
         return jsonify(response.data[0])
     except Exception as e:
@@ -334,3 +350,8 @@ def serve_users(path):
 @app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory('.', path)
+
+if __name__ == '__main__':
+    print("Starting Flask server...")
+    print("Server running at http://localhost:5000")
+    app.run(host='0.0.0.0', port=5000, debug=True)
