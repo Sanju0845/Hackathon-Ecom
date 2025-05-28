@@ -1,6 +1,6 @@
 const SUPABASE_CONFIG = {
-    url: import.meta.env.VITE_SUPABASE_URL || 'your_supabase_url',
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || 'your_supabase_anon_key'
+    url: ' https://puwefvbaowdflcidyzto.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1d2VmdmJhb3dkZmxjaWR5enRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwOTcyODcsImV4cCI6MjA2MzY3MzI4N30.TpZ8rmEP8rPHH66fmB_NJxAceXMoPHmD9DJpCc17cjE'
 };
 
 // Prevent modification of the config
