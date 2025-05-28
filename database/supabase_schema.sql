@@ -2,38 +2,47 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Users table (for login/signup)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     name TEXT NOT NULL,
+    phone TEXT,
+    address TEXT,
     is_admin BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Products table (for admin to add/edit products)
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     stock INTEGER NOT NULL DEFAULT 0,
     image_url TEXT,
+    category TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Orders table (when user makes a purchase)
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id),
     total DECIMAL(10,2) NOT NULL,
     status TEXT DEFAULT 'pending',
+    name TEXT,
+    phone TEXT,
+    address TEXT,
+    payment_method TEXT,
+    upi_id TEXT,
+    items JSONB,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Order items (products in each order)
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
     product_id UUID REFERENCES products(id),
@@ -43,20 +52,21 @@ CREATE TABLE order_items (
 );
 
 -- Cart items (temporary storage for items in cart)
-CREATE TABLE cart_items (
+CREATE TABLE IF NOT EXISTS cart_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
-    product_id UUID REFERENCES products(id),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, product_id)
 );
 
 -- Create indexes for better performance
-CREATE INDEX idx_products_name ON products(name);
-CREATE INDEX idx_orders_user ON orders(user_id);
-CREATE INDEX idx_order_items_order ON order_items(order_id);
-CREATE INDEX idx_cart_items_user ON cart_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_user ON cart_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_product ON cart_items(product_id);
 
 -- Create stored procedure for getting orders
 CREATE OR REPLACE FUNCTION get_orders()
@@ -78,10 +88,10 @@ BEGIN
         o.created_at,
         o.status,
         o.total,
-        u.name AS customer_name,
+        COALESCE(o.name, u.name) AS customer_name,
         u.email AS customer_email,
-        NULL AS customer_phone,
-        NULL AS customer_address,
+        COALESCE(o.phone, u.phone) AS customer_phone,
+        COALESCE(o.address, u.address) AS customer_address,
         COALESCE(
             jsonb_agg(
                 jsonb_build_object(
@@ -97,7 +107,7 @@ BEGIN
     LEFT JOIN users u ON o.user_id = u.id
     LEFT JOIN order_items oi ON o.id = oi.order_id
     LEFT JOIN products p ON oi.product_id = p.id
-    GROUP BY o.id, o.created_at, o.status, o.total, u.name, u.email
+    GROUP BY o.id, o.created_at, o.status, o.total, o.name, u.name, u.email, o.phone, u.phone, o.address, u.address
     ORDER BY o.created_at DESC;
 END;
 $$ LANGUAGE plpgsql; 

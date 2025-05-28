@@ -1,32 +1,53 @@
 # Online Store
 
-A web-based e-commerce platform built with Python and HTML/CSS/JavaScript.
+A modern e-commerce website built with HTML, CSS, JavaScript, and Supabase.
+
+## Deployment Instructions
+
+1. Fork this repository to your GitHub account
+2. Go to [Vercel](https://vercel.com) and sign in with your GitHub account
+3. Click "New Project" and select your forked repository
+4. Add the following environment variables in Vercel:
+   - `VITE_SUPABASE_URL`: Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+5. Click "Deploy"
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 ## Features
 
-- Product catalog
-- Shopping cart functionality
 - User authentication
+- Product browsing and filtering
+- Shopping cart functionality
 - Order management
-- Admin dashboard
+- Responsive design
+- Dark/Light theme support
 
-## Setup
+## Tech Stack
+
+- HTML5
+- CSS3
+- JavaScript
+- Supabase (Backend)
+- Vercel (Hosting)
+
+## Local Development
 
 1. Clone the repository
-2. Install Python dependencies (if any)
-3. Run the server:
-   ```
-   python server.py
-   ```
-4. Open `index.html` in your browser
+2. Create a `.env` file with your Supabase credentials
+3. Open `index.html` in your browser
 
-## Project Structure
+## Contributing
 
-- `server.py` - Backend server
-- `index.html` - Main frontend page
-- `products.json` - Product database
-- `orders.json` - Order records
-- `users.json` - User database
-- `assets/` - Static assets
-- `admin/` - Admin dashboard
-- `auth/` - Authentication related files 
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request 

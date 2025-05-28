@@ -1,21 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - Our Store</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js" type="module"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/shared-styles.css">
+    <script src="../js/theme-manager.js"></script>
     <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary-light: #fff;
+            --bg-secondary-light: #f8f8f8;
+            --text-primary-light: #1a1a1a;
+            --text-secondary-light: #666;
+            --accent-light: #f4f7ff;
+            --accent-darker-light: #C5D1F8;
+            --border-light: #e5e7eb;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --gradient-primary-light: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --gradient-secondary-light: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+
+            /* Dark theme variables */
+            --bg-primary-dark: #0f172a;
+            --bg-secondary-dark: #1e293b;
+            --text-primary-dark: #ffffff;
+            --text-secondary-dark: #94a3b8;
+            --accent-dark: #1e293b;
+            --accent-darker-dark: #334155;
+            --border-dark: #334155;
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+            --gradient-primary-dark: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            --gradient-secondary-dark: linear-gradient(135deg, #fbbf24 0%, #f87171 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: var(--bg-primary-light);
+            --bg-secondary: var(--bg-secondary-light);
+            --text-primary: var(--text-primary-light);
+            --text-secondary: var(--text-secondary-light);
+            --accent: var(--accent-light);
+            --accent-darker: var(--accent-darker-light);
+            --border: var(--border-light);
+            --shadow: var(--shadow-light);
+            --gradient-primary: var(--gradient-primary-light);
+            --gradient-secondary: var(--gradient-secondary-light);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: var(--bg-primary-dark);
+            --bg-secondary: var(--bg-secondary-dark);
+            --text-primary: var(--text-primary-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --accent: var(--accent-dark);
+            --accent-darker: var(--accent-darker-dark);
+            --border: var(--border-dark);
+            --shadow: var(--shadow-dark);
+            --gradient-primary: var(--gradient-primary-dark);
+            --gradient-secondary: var(--gradient-secondary-dark);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         body {
-            background-color: #f8f9fa;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
             padding: 2rem;
         }
@@ -30,11 +89,11 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            color: #1a1a1a;
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px var(--shadow);
+            border: 1px solid var(--border);
         }
 
         .back-btn {
@@ -42,62 +101,91 @@
             align-items: center;
             gap: 0.5rem;
             text-decoration: none;
-            color: #666;
+            color: var(--text-secondary);
             font-weight: 500;
-            transition: color 0.2s;
+            transition: all 0.3s ease;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
         }
 
         .back-btn:hover {
-            color: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+            color: var(--text-primary);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .orders-grid {
             display: grid;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
         .order-card {
-            background: white;
-            border-radius: 12px;
+            background: var(--bg-primary);
+            border-radius: 1rem;
             padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
         }
 
         .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px var(--shadow);
         }
 
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border);
         }
 
         .order-id {
-            font-weight: 600;
-            color: #1a1a1a;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .order-date {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .order-items {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .order-item {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #f5f5f5;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .order-item:hover {
+            transform: translateX(5px);
+            background: var(--bg-secondary);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 0.5rem 0;
         }
 
         .order-item:last-child {
@@ -107,46 +195,64 @@
         }
 
         .item-image {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
+            width: 80px;
+            height: 80px;
+            border-radius: 0.75rem;
             object-fit: cover;
+            box-shadow: 0 4px 12px var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease;
+        }
+
+        .item-image:hover {
+            transform: scale(1.1);
         }
 
         .item-details {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .item-name {
-            font-weight: 500;
-            color: #1a1a1a;
-            margin-bottom: 0.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
         }
 
         .item-price {
-            color: #666;
-            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
         }
 
         .order-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             padding-top: 1rem;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--border);
         }
 
         .order-total {
-            font-weight: 600;
-            color: #2196F3;
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .order-status {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            padding: 0.75rem 1.25rem;
+            border-radius: 1rem;
             font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .status-pending {
@@ -172,42 +278,102 @@
         .empty-orders {
             text-align: center;
             padding: 3rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background: var(--bg-primary);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px var(--shadow);
+            border: 1px solid var(--border);
         }
 
         .empty-orders .material-icons-round {
             font-size: 3rem;
-            color: #666;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin-bottom: 1rem;
         }
 
         .empty-orders p {
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 1.5rem;
+            font-size: 1.1rem;
         }
 
         .shop-now-btn {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: #2196F3;
+            background: var(--gradient-primary);
             color: white;
             padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            border-radius: 0.75rem;
             text-decoration: none;
-            font-weight: 500;
-            transition: background-color 0.2s;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .shop-now-btn:hover {
-            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow);
+        }
+
+        .theme-switch {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .theme-switch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .theme-switch .material-icons-round {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .switch-track {
+            width: 40px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .switch-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .switch-thumb {
+            transform: translateX(20px);
         }
 
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
+            }
+
+            .container {
+                margin-top: 4rem;
             }
 
             .header {
@@ -216,15 +382,49 @@
                 text-align: center;
             }
 
-            .order-header {
+            .back-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .order-item {
                 flex-direction: column;
-                gap: 0.5rem;
+                gap: 1rem;
+            }
+
+            .item-image {
+                width: 100%;
+                height: 200px;
+            }
+
+            .order-footer {
+                flex-direction: column;
+                gap: 1rem;
                 text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .item-image {
+                height: 150px;
+            }
+
+            .order-status {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
+    <div class="theme-switch" onclick="toggleTheme()">
+        <span class="material-icons-round">light_mode</span>
+        <div class="switch-track">
+            <div class="switch-thumb"></div>
+        </div>
+        <span class="material-icons-round">dark_mode</span>
+    </div>
+
     <div class="container">
         <div class="header">
             <a href="products.html" class="back-btn">
@@ -240,6 +440,30 @@
     </div>
 
     <script>
+        // Initialize Supabase client
+        let supabaseClient;
+
+        // Function to initialize Supabase
+        async function initSupabase() {
+            const module = await import('../js/config.js');
+            const SUPABASE_CONFIG = module.default;
+            supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Supabase first
+            await initSupabase();
+            
+            // Then initialize theme and load orders
+            window.themeManager.initializeTheme();
+            window.themeManager.initializePageTransitions();
+            loadOrders();
+        });
+
+        function toggleTheme() {
+            window.themeManager.toggleTheme();
+        }
+
         function checkLogin() {
             const isAuthenticated = localStorage.getItem('isAuthenticated');
             const userData = localStorage.getItem('user_data');
@@ -253,33 +477,38 @@
         }
 
         async function loadOrders() {
-            if (!checkLogin()) return;
-
-            const ordersGrid = document.getElementById('ordersGrid');
-            
             try {
-                // Get user data
-                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                
-                // Check if user is admin
-                const isAdmin = user.is_admin || userData.is_admin;
-                const userId = isAdmin ? 'admin' : (userData.id || user.id);
-
-                if (!userId) {
-                    throw new Error('User ID not found');
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user) {
+                    window.location.href = '../auth/login.html';
+                    return;
                 }
 
-                // Fetch orders
-                const response = await fetch(`/api/orders?user_id=${userId}`);
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to load orders');
+                // Initialize Supabase if not already initialized
+                if (!supabaseClient) {
+                    const module = await import('../js/config.js');
+                    const SUPABASE_CONFIG = module.default;
+                    supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
                 }
 
-                const orders = await response.json();
+                // Load orders with items
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select(`
+                        *,
+                        order_items!inner (
+                            id,
+                            quantity,
+                            size,
+                            product_id
+                        )
+                    `)
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
 
+                if (error) throw error;
+
+                const ordersGrid = document.getElementById('ordersGrid');
                 if (!orders || orders.length === 0) {
                     ordersGrid.innerHTML = `
                         <div class="empty-orders">
@@ -294,75 +523,85 @@
                     return;
                 }
 
-                // Sort orders by date (newest first)
-                orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                // For each order, get the product details
+                const ordersWithProducts = await Promise.all(orders.map(async (order) => {
+                    const orderItemsWithProducts = await Promise.all(order.order_items.map(async (item) => {
+                        const { data: product, error: productError } = await supabaseClient
+                            .from('products')
+                            .select('*')
+                            .eq('id', item.product_id)
+                            .single();
 
-                const ordersHTML = orders.map(order => {
-                    const statusClass = {
-                        'pending': 'status-pending',
-                        'processing': 'status-processing',
-                        'completed': 'status-delivered',
-                        'cancelled': 'status-cancelled'
-                    }[order.status] || 'status-pending';
+                        if (productError) {
+                            console.error('Error fetching product:', productError);
+                            return {
+                                ...item,
+                                product: {
+                                    name: 'Unknown Product',
+                                    price: 0,
+                                    image_url: 'https://via.placeholder.com/100'
+                                }
+                            };
+                        }
 
-                    const itemsHTML = order.order_items.map(item => {
-                        // Add checks for item.products being defined
-                        const productName = item.products?.name || 'Unknown Product';
-                        const productImageUrl = item.products?.image_url || 'https://via.placeholder.com/50';
-                        const itemPrice = parseFloat(item.price_at_time || item.products?.price || 0).toFixed(2);
+                        return {
+                            ...item,
+                            product
+                        };
+                    }));
 
-                        return `
-                        <div class="order-item">
-                            <img src="${productImageUrl}" 
-                                 alt="${productName}" 
-                                 class="item-image"
-                                 onerror="this.src='https://via.placeholder.com/50'">
-                            <div class="item-details">
-                                <div class="item-name">${productName}</div>
-                                <div class="item-price">₹${itemPrice} × ${item.quantity}</div>
+                    return {
+                        ...order,
+                        order_items: orderItemsWithProducts
+                    };
+                }));
+
+                ordersGrid.innerHTML = ordersWithProducts.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-info">
+                                <h3>Order #${order.id}</h3>
+                                <p class="order-date">${new Date(order.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div class="order-status ${order.status.toLowerCase()}">
+                                ${order.status}
                             </div>
                         </div>
-                    `;
-                    }).join('');
-
-                    return `
-                        <div class="order-card">
-                            <div class="order-header">
-                                <div class="order-id">Order #${order.id}</div>
-                                <div class="order-date">${new Date(order.created_at).toLocaleDateString()}</div>
-                            </div>
-                            <div class="order-items">
-                                ${itemsHTML}
-                            </div>
-                            <div class="order-footer">
-                                <div class="order-total">Total: ₹${parseFloat(order.total).toFixed(2)}</div>
-                                <div class="order-status ${statusClass}">
-                                    ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        <div class="order-items">
+                            ${order.order_items.map(item => `
+                                <div class="order-item">
+                                    <img src="${item.product?.image_url || 'https://via.placeholder.com/100'}" 
+                                         alt="${item.product?.name || 'Product'}" 
+                                         class="item-image">
+                                    <div class="item-details">
+                                        <h4>${item.product?.name || 'Unknown Product'}</h4>
+                                        <p class="item-price">₹${(item.product?.price || 0).toFixed(2)}</p>
+                                        <p class="item-quantity">Quantity: ${item.quantity}</p>
+                                        ${item.size ? `<p class="item-size">Size: ${item.size}</p>` : ''}
+                                    </div>
                                 </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-footer">
+                            <div class="order-total">
+                                <span>Total:</span>
+                                <span>₹${order.total.toFixed(2)}</span>
                             </div>
                         </div>
-                    `;
-                }).join('');
-
-                ordersGrid.innerHTML = ordersHTML;
+                    </div>
+                `).join('');
 
             } catch (error) {
                 console.error('Error loading orders:', error);
+                const ordersGrid = document.getElementById('ordersGrid');
                 ordersGrid.innerHTML = `
-                    <div class="empty-orders" style="color: #dc3545;">
+                    <div class="error-message">
                         <span class="material-icons-round">error_outline</span>
-                        <p>${error.message}</p>
-                        <button onclick="loadOrders()" class="shop-now-btn" style="background: #dc3545;">
-                            <span class="material-icons-round">refresh</span>
-                            Retry
-                        </button>
+                        <p>Failed to load orders. Please try again later.</p>
                     </div>
                 `;
             }
         }
-
-        // Load orders when page loads
-        document.addEventListener('DOMContentLoaded', loadOrders);
     </script>
 </body>
 </html> 

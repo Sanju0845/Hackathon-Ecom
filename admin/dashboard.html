@@ -929,6 +929,19 @@
                         <div class="hint">Enter the available quantity</div>
                 </div>
                 <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="electronics">Electronics</option>
+                        <option value="fashion">Fashion & Clothing</option>
+                        <option value="home">Home & Living</option>
+                        <option value="beauty">Beauty & Personal Care</option>
+                        <option value="sports">Sports & Fitness</option>
+                        <option value="books">Books & Media</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <div class="hint">Select the product category</div>
+                </div>
+                <div class="form-group">
                     <label for="image">Image URL</label>
                         <input type="url" id="image" required onchange="updateImagePreview(this)">
                         <div class="hint">Provide a direct link to the product image</div>
@@ -1099,6 +1112,7 @@
                 document.getElementById('price').value = product.price;
                 document.getElementById('stock').value = product.stock || 0;
                 document.getElementById('image').value = product.image_url || product.image || '';
+                document.getElementById('category').value = product.category || 'other';
                 updateImagePreview(document.getElementById('image'));
             } else {
                 title.textContent = 'Add New Product';
@@ -1156,7 +1170,8 @@
                     description: document.getElementById('description').value.trim(),
                     price: parseFloat(document.getElementById('price').value),
                     stock: parseInt(document.getElementById('stock').value),
-                    image_url: document.getElementById('image').value.trim()
+                    image_url: document.getElementById('image').value.trim(),
+                    category: document.getElementById('category').value
                 };
                 const productId = document.getElementById('productId').value;
                 let url = '/api/admin/products';
