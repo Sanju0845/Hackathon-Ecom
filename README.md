@@ -1,50 +1,32 @@
 # Online Store
 
-A modern e-commerce website built with HTML, CSS, and JavaScript.
+A web-based e-commerce platform built with Python and HTML/CSS/JavaScript.
 
 ## Features
 
-- Responsive design for all devices
-- Dark/Light theme support
+- Product catalog
 - Shopping cart functionality
 - User authentication
 - Order management
-- Payment integration
+- Admin dashboard
 
-## Deployment
+## Setup
 
-This project is deployed on Vercel. The site is automatically updated when changes are pushed to the main branch.
-
-### Local Development
-
-1. Clone the repository:
-```bash
-git clone <your-repo-url>
-```
-
-2. Open the project in your preferred code editor
-
-3. Start a local server (you can use Live Server extension in VS Code)
+1. Clone the repository
+2. Install Python dependencies (if any)
+3. Run the server:
+   ```
+   python server.py
+   ```
+4. Open `index.html` in your browser
 
 ## Project Structure
 
-```
-├── assets/          # Images and animations
-├── css/            # Stylesheets
-├── js/             # JavaScript files
-├── users/          # User-related pages
-├── auth/           # Authentication pages
-└── index.html      # Main entry point
-```
-
-## Technologies Used
-
-- HTML5
-- CSS3
-- JavaScript
-- Supabase (Backend)
-- Vercel (Hosting)
-
-## License
-
-MIT License 
+- `server.py` - Backend server
+- `index.html` - Main frontend page
+- `products.json` - Product database
+- `orders.json` - Order records
+- `users.json` - User database
+- `assets/` - Static assets
+- `admin/` - Admin dashboard
+- `auth/` - Authentication related files 
