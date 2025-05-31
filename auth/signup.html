@@ -491,17 +491,17 @@
                 </div>
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" placeholder="Email address" required>
+                    <input type="email" id="email" placeholder="Email address" required autocomplete="email">
                     <div class="error-message" id="emailError"></div>
                 </div>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Password" required>
+                    <input type="password" id="password" placeholder="Password" required autocomplete="new-password">
                     <div class="error-message" id="passwordError"></div>
                 </div>
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                    <input type="password" id="confirmPassword" placeholder="Confirm password" required autocomplete="new-password">
                     <div class="error-message" id="confirmPasswordError"></div>
                 </div>
                 <div class="terms">
@@ -548,7 +548,7 @@
                     throw new Error('Password must be at least 6 characters');
                 }
 
-                console.log('Attempting to sign up with:', { email, fullName });
+                console.log('Attempting to sign up with:', { email, password, name: fullName });
 
                 // Register user through our server API
                 const response = await fetch('/api/register', {

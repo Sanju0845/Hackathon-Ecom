@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Orders Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
     <style>
@@ -825,7 +826,22 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                    console.error('API error response:', errorData);
+                    let errorMessage = errorData.error || 'Unknown error';
+                    if (errorMessage.includes('price_at_time')) {
+                        errorMessage = 'Backend is missing the price_at_time field. Please check your backend implementation.';
+                    }
+                    document.getElementById('ordersGrid').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                            <span class="material-icons">error_outline</span>
+                            <p>Failed to load orders: ${errorMessage}</p>
+                            <button onclick="loadOrders()" class="btn btn-danger" style="margin-top: 1rem;">
+                                <span class="material-icons">refresh</span>
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                    return;
                 }
 
                 const orders = await response.json();
@@ -886,16 +902,19 @@
                                     </div>
                                 </div>
                                 <div class="order-items">
-                                    ${order.items.map(item => `
-                                        <div class="item-row">
-                                            <img src="${item.image || 'https://via.placeholder.com/50'}" alt="${item.name}" class="item-image">
-                                            <div class="item-details">
-                                                <span class="item-name">${item.name}</span>
-                                                <span class="item-quantity">Quantity: ${item.quantity}</span>
+                                    ${order.items.map(item => {
+                                        let itemPrice = item.price_at_time !== undefined ? item.price_at_time : (item.price !== undefined ? item.price : 0);
+                                        return `
+                                            <div class="item-row">
+                                                <img src="${item.image || 'https://via.placeholder.com/50'}" alt="${item.name}" class="item-image">
+                                                <div class="item-details">
+                                                    <span class="item-name">${item.name}</span>
+                                                    <span class="item-quantity">Quantity: ${item.quantity}</span>
+                                                </div>
+                                                <span class="item-price">$${parseFloat(itemPrice).toFixed(2)}</span>
                                             </div>
-                                            <span class="item-price">$${parseFloat(item.price).toFixed(2)}</span>
-                                        </div>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </div>
                                 <div class="order-total">
                                     <span class="total-label">Total Amount</span>

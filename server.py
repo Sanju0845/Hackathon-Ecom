@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import jwt
 from datetime import datetime, timedelta
+import bcrypt
 
 # Load environment variables
 load_dotenv()
@@ -16,10 +17,19 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key')  # In production, always use environment variable
 
 # Supabase configuration
-supabase = create_client(
-    os.getenv('SUPABASE_URL', 'https://puwefvbaowdflcidyzto.supabase.co'),
-    os.getenv('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1d2VmdmJhb3dkZmxjaWR5enRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwOTcyODcsImV4cCI6MjA2MzY3MzI4N30.TpZ8rmEP8rPHH66fmB_NJxAceXMoPHmD9DJpCc17cjE')
-)
+try:
+    supabase = create_client(
+        os.getenv('SUPABASE_URL', 'https://qvxeqkzskzkglbsghhfx.supabase.co'),
+        os.getenv('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2eGVxa3pza3prZ2xic2doaGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2ODY3NzEsImV4cCI6MjA2NDI2Mjc3MX0.PmQXBYV4SDZtnCwUgRRDtu6wtD6h8TohtyPN4XTEsyA')
+    )
+    print("Supabase client initialized successfully")
+except Exception as e:
+    print("Error initializing Supabase client:", str(e))
+    raise
+
+# ==============================================
+# Helper Functions
+# ==============================================
 
 def generate_token(user_data):
     """Generate JWT token for user"""
@@ -60,41 +70,96 @@ def get_token_from_header():
         return token
     return None
 
-# Routes
+def hash_password(password):
+    """Hash a password for storing."""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+# ==============================================
+# Authentication Routes
+# ==============================================
+
 @app.route('/api/register', methods=['POST'])
 def register():
+    print('Register endpoint called')
+    if not request.is_json:
+        print('Request is not JSON')
+        return jsonify({'error': 'Request must be JSON'}), 400
+
     data = request.json
+    print('Received data:', data)
+    if not data:
+        print('No data provided')
+        return jsonify({'error': 'No data provided'}), 400
+
+    required_fields = ['email', 'password', 'name']
+    for field in required_fields:
+        if field not in data:
+            print(f'Missing required field: {field}')
+            return jsonify({'error': f'Missing required field: {field}'}), 400
+
     try:
-        # Check if user already exists
-        existing_user = supabase.table('users').select("*").eq('email', data['email']).execute()
-        if existing_user.data:
+        print('Checking if user exists...')
+        check_user = supabase.table('users').select("id").eq('email', data['email']).execute()
+        print('User check result:', check_user.data)
+        if check_user.data:
+            print('Email already exists')
             return jsonify({'error': 'Email already exists'}), 400
-        
-        # Create new user with only the fields we have in our schema
+
+        print('Hashing password...')
+        hashed_password = hash_password(data['password'])
+        print('Password hashed')
+
+        print('Creating user...')
         user_data = {
             'email': data['email'],
-            'password': data['password'],
-            'name': data.get('name', '')
+            'password': hashed_password.decode('utf-8'),  # Store hashed password
+            'name': data['name']
         }
-        
-        # Add optional fields only if they exist in the request
-        if 'phone' in data:
-            user_data['phone'] = data['phone']
-        if 'address' in data:
-            user_data['address'] = data['address']
-        
-        response = supabase.table('users').insert(user_data).execute()
-        
-        if response.data:
-            user = response.data[0]
-            return jsonify({
-                'id': user['id'],
-                'email': user['email'],
-                'name': user.get('name', ''),
-                'phone': user.get('phone', ''),
-                'address': user.get('address', '')
-            })
-        return jsonify({'error': 'Failed to create user'}), 400
+
+        user_response = supabase.table('users').insert([user_data]).execute()
+        print('User creation response:', user_response.data)
+        if not user_response.data or 'id' not in user_response.data[0]:
+            print('Failed to create user')
+            return jsonify({'error': 'Failed to create user'}), 400
+
+        user = user_response.data[0]
+
+        print('Creating user profile...')
+        profile_data = {
+            'user_id': user['id'],
+            'name': data['name'],
+            'phone': data.get('phone', ''),
+            'address': data.get('address', '')
+        }
+
+        profile_response = supabase.table('user_profiles').insert(profile_data).execute()
+        print('Profile creation response:', profile_response.data)
+        if not profile_response.data:
+            print('Failed to create user profile, rolling back user')
+            # If profile creation fails, delete the user
+            supabase.table('users').delete().eq('id', user['id']).execute()
+            return jsonify({'error': 'Failed to create user profile'}), 400
+
+        print('Generating token...')
+        token = generate_token({
+            'id': user['id'],
+            'email': user['email']
+        })
+
+        if not token:
+            print('Failed to generate token')
+            return jsonify({'error': 'Failed to generate token'}), 500
+
+        print('Registration successful')
+        return jsonify({
+            'id': user['id'],
+            'email': user['email'],
+            'name': profile_data['name'],
+            'phone': profile_data['phone'],
+            'address': profile_data['address'],
+            'token': token
+        })
+
     except Exception as e:
         print('Registration error:', str(e))
         return jsonify({'error': str(e)}), 400
@@ -129,16 +194,24 @@ def login():
         
         # Regular user login
         try:
-            response = supabase.table('users').select("*").eq('email', data['email']).eq('password', data['password']).execute()
+            # First check if user exists
+            user_response = supabase.table('users').select("*").eq('email', data['email']).execute()
             
-            if not response.data:
-                return jsonify({'error': 'Invalid credentials'}), 401
+            if not user_response.data:
+                return jsonify({'error': 'User not found'}), 401
                 
-            user = response.data[0]
+            user = user_response.data[0]
+            
+            # Verify password
+            if user.get('password') != data['password']:
+                return jsonify({'error': 'Invalid password'}), 401
+            
+            # Generate token
             token = generate_token(user)
             if not token:
                 return jsonify({'error': 'Failed to generate token'}), 500
 
+            # Return user data with token
             return jsonify({
                 'id': user['id'],
                 'email': user['email'],
@@ -149,13 +222,18 @@ def login():
                 'role': 'user',
                 'token': token
             })
+            
         except Exception as supabase_error:
             print('Supabase error:', str(supabase_error))
-            return jsonify({'error': 'Database error occurred'}), 500
+            return jsonify({'error': 'Database error occurred', 'details': str(supabase_error)}), 500
             
     except Exception as e:
         print('Login error:', str(e))
-        return jsonify({'error': 'An unexpected error occurred'}), 500
+        return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
+
+# ==============================================
+# Product Routes
+# ==============================================
 
 @app.route('/api/products', methods=['GET'])
 def get_products():
@@ -204,6 +282,10 @@ def get_product(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+# ==============================================
+# Cart Routes
+# ==============================================
+
 @app.route('/api/cart', methods=['GET'])
 def get_cart():
     print('GET /api/cart - Headers:', dict(request.headers))  # Debug log
@@ -217,6 +299,10 @@ def get_cart():
         payload = verify_token(token)
         if not payload:
             return jsonify({'error': 'Invalid or expired token'}), 401
+
+        # Special handling for admin user
+        if payload.get('user_id') == 'admin':
+            return jsonify([])  # Return empty cart for admin
 
         print('Getting cart for user:', payload['user_id'])  # Debug log
         
@@ -271,6 +357,10 @@ def add_to_cart():
         payload = verify_token(token)
         if not payload:
             return jsonify({'error': 'Invalid or expired token'}), 401
+
+        # Special handling for admin user
+        if payload.get('user_id') == 'admin':
+            return jsonify({'error': 'Admin users cannot add items to cart'}), 403
 
         data = request.json
         if not data.get('product_id'):
@@ -328,8 +418,10 @@ def add_to_cart():
         print('Add to cart error:', str(e))
         return jsonify({'error': str(e)}), 400
 
-@app.route('/api/cart/<item_id>', methods=['PUT'])
+@app.route('/api/cart/update/<item_id>', methods=['POST'])
 def update_cart_item(item_id):
+    print(f"Received update request for item {item_id}")  # Debug log
+    
     # Verify token
     token = get_token_from_header()
     if not token:
@@ -340,40 +432,84 @@ def update_cart_item(item_id):
         if not payload:
             return jsonify({'error': 'Invalid or expired token'}), 401
 
-        data = request.json
+        # Special handling for admin user
+        if payload.get('user_id') == 'admin':
+            return jsonify({'error': 'Admin users cannot update cart'}), 403
+
+        # Get request data
+        if not request.is_json:
+            print("Request is not JSON")  # Debug log
+            return jsonify({'error': 'Request must be JSON'}), 400
+            
+        data = request.get_json()
+        print(f"Request data: {data}")  # Debug log
+        
+        if not data:
+            print("No data provided in request")  # Debug log
+            return jsonify({'error': 'No data provided'}), 400
+            
         if 'quantity' not in data:
+            print("Quantity not provided in request")  # Debug log
             return jsonify({'error': 'Quantity is required'}), 400
 
+        try:
+            quantity = int(data['quantity'])
+            print(f"Parsed quantity: {quantity}")  # Debug log
+            if quantity < 1:
+                return jsonify({'error': 'Quantity must be at least 1'}), 400
+        except (ValueError, TypeError) as e:
+            print(f"Error parsing quantity: {str(e)}")  # Debug log
+            return jsonify({'error': 'Invalid quantity value'}), 400
+
         # Get cart item with product details
-        cart_item = supabase.table('cart_items')\
-            .select("*, products(*)")\
-            .eq('id', item_id)\
-            .execute()
+        try:
+            cart_item = supabase.table('cart_items')\
+                .select("*, products(*)")\
+                .eq('id', item_id)\
+                .execute()
+                
+            print(f"Cart item response: {cart_item.data}")  # Debug log
 
-        if not cart_item.data:
-            return jsonify({'error': 'Cart item not found'}), 404
+            if not cart_item.data:
+                print("Cart item not found")  # Debug log
+                return jsonify({'error': 'Cart item not found'}), 404
 
-        # Verify user owns this cart item
-        if cart_item.data[0]['user_id'] != payload['user_id']:
-            return jsonify({'error': 'Unauthorized'}), 403
+            # Verify user owns this cart item
+            if cart_item.data[0]['user_id'] != payload['user_id']:
+                print("Unauthorized access attempt")  # Debug log
+                return jsonify({'error': 'Unauthorized'}), 403
 
-        # Check stock availability
-        product = cart_item.data[0]['products']
-        if data['quantity'] > product['stock']:
-            return jsonify({'error': 'Not enough stock available'}), 400
+            # Check stock availability
+            product = cart_item.data[0]['products']
+            print(f"Product stock: {product['stock']}")  # Debug log
+            
+            if quantity > product['stock']:
+                return jsonify({'error': 'Not enough stock available'}), 400
 
-        # Update quantity
-        supabase.table('cart_items')\
-            .update({'quantity': data['quantity']})\
-            .eq('id', item_id)\
-            .execute()
+            # Update quantity
+            response = supabase.table('cart_items')\
+                .update({'quantity': quantity})\
+                .eq('id', item_id)\
+                .execute()
+                
+            print(f"Update response: {response.data}")  # Debug log
 
-        return jsonify({'message': 'Cart updated'})
+            if not response.data:
+                return jsonify({'error': 'Failed to update cart item'}), 500
+
+            return jsonify({
+                'message': 'Cart updated successfully',
+                'updated_item': response.data[0]
+            })
+        except Exception as db_error:
+            print(f"Database error: {str(db_error)}")  # Debug log
+            return jsonify({'error': 'Database error occurred'}), 500
+            
     except Exception as e:
-        print('Update cart error:', str(e))
+        print('Update cart error:', str(e))  # Debug log
         return jsonify({'error': str(e)}), 400
 
-@app.route('/api/cart/remove/<item_id>', methods=['POST'])
+@app.route('/api/cart/remove/<item_id>', methods=['DELETE'])
 def remove_from_cart(item_id):
     # Verify token
     token = get_token_from_header()
@@ -384,6 +520,10 @@ def remove_from_cart(item_id):
         payload = verify_token(token)
         if not payload:
             return jsonify({'error': 'Invalid or expired token'}), 401
+
+        # Special handling for admin user
+        if payload.get('user_id') == 'admin':
+            return jsonify({'error': 'Admin users cannot remove items from cart'}), 403
 
         # Verify user owns this cart item
         cart_item = supabase.table('cart_items')\
@@ -404,6 +544,30 @@ def remove_from_cart(item_id):
     except Exception as e:
         print('Remove from cart error:', str(e))
         return jsonify({'error': str(e)}), 400
+
+@app.route('/api/cart/clear', methods=['DELETE'])
+def clear_cart():
+    # Verify token
+    token = get_token_from_header()
+    if not token:
+        return jsonify({'error': 'Authentication required'}), 401
+    try:
+        payload = verify_token(token)
+        if not payload:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+        # Special handling for admin user
+        if payload.get('user_id') == 'admin':
+            return jsonify({'error': 'Admin users cannot clear cart'}), 403
+        # Delete all cart items for this user
+        supabase.table('cart_items').delete().eq('user_id', payload['user_id']).execute()
+        return jsonify({'message': 'Cart cleared successfully'})
+    except Exception as e:
+        print('Clear cart error:', str(e))
+        return jsonify({'error': str(e)}), 400
+
+# ==============================================
+# Order Routes
+# ==============================================
 
 @app.route('/api/checkout', methods=['POST'])
 def checkout():
@@ -469,51 +633,57 @@ def get_orders():
         print('Error fetching orders:', str(e))  # Add logging
         return jsonify({'error': str(e)}), 400
 
-# Admin routes
+# ==============================================
+# Admin Routes
+# ==============================================
+
 @app.route('/api/admin/products', methods=['GET', 'POST'])
 def admin_products():
     try:
         if request.method == 'POST':
             data = request.json
+            # Accept images as array and image_url as main image
             response = supabase.table('products').insert({
                 'name': data['name'],
                 'description': data.get('description'),
                 'price': data['price'],
                 'image_url': data.get('image_url'),
-                'category': data.get('category', 'other'),  # Default category
+                'images': data.get('images', []),
+                'category': data.get('category', 'other'),
                 'stock': data.get('stock', 0)
             }).execute()
             return jsonify(response.data[0] if response.data else {'error': 'Failed to create product'})
 
-        # Add support for category filter in GET request
-        category = request.args.get('category')
-        query = supabase.table('products').select("*")
-        
-        if category and category != 'all':
-            query = query.eq('category', category)
-            
-        response = query.execute()
+        # GET request - return all products
+        response = supabase.table('products').select("*").execute()
+        if not response.data:
+            return jsonify([])  # Return empty array if no products
         return jsonify(response.data)
     except Exception as e:
+        print('Error in admin_products:', str(e))  # Add logging
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/admin/products/<id>', methods=['PUT', 'DELETE'])
 def admin_product(id):
     try:
         if request.method == 'DELETE':
-            supabase.table('products').delete().eq('id', id).execute()
-            return jsonify({'message': 'Product deleted'})
+            try:
+                supabase.table('products').delete().eq('id', id).execute()
+                return jsonify({'message': 'Product deleted'})
+            except Exception as e:
+                return jsonify({'error': f'Failed to delete product: {str(e)}'}), 400
         
         data = request.json
+        # Accept images as array and image_url as main image
         response = supabase.table('products').update({
             'name': data.get('name'),
             'description': data.get('description'),
             'price': data.get('price'),
             'image_url': data.get('image_url'),
+            'images': data.get('images', []),
             'category': data.get('category'),
             'stock': data.get('stock')
         }).eq('id', id).execute()
-        
         return jsonify({'message': 'Product updated'})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
@@ -533,14 +703,14 @@ def admin_orders():
                 'status': order['status'],
                 'total': order['total'],
                 'customer': {
-                    'name': user.get('full_name', ''),
+                    'name': user.get('name', ''),
                     'email': user.get('email', ''),
-                    'phone': user.get('phone_number', ''),
-                    'address': user.get('shipping_address', '')
+                    'phone': user.get('phone', ''),
+                    'address': user.get('address', '')
                 },
                 'items': [{
                     'name': item['products']['name'],
-                    'price': item['price_at_time'],
+                    'price': item['products']['price'],  # Use product price instead of price_at_time
                     'quantity': item['quantity'],
                     'image': item['products'].get('image_url', '')
                 } for item in order_items]
@@ -548,6 +718,7 @@ def admin_orders():
             orders.append(transformed_order)
         return jsonify(orders)
     except Exception as e:
+        print('Error in admin_orders:', str(e))  # Add logging
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/admin/orders/<id>', methods=['PATCH', 'DELETE'])
@@ -577,7 +748,10 @@ def admin_order(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-# Serve static files
+# ==============================================
+# Static File Routes
+# ==============================================
+
 @app.route('/')
 def root():
     return send_from_directory('.', 'index.html')
@@ -590,11 +764,48 @@ def serve_admin(path):
 def serve_users(path):
     return send_from_directory('users', path)
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('.', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 @app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory('.', path)
 
+# ==============================================
+# Error Handling & Middleware
+# ==============================================
+
+@app.errorhandler(Exception)
+def handle_error(error):
+    print("Server error:", str(error))
+    return jsonify({
+        'error': 'Internal server error',
+        'message': str(error)
+    }), 500
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
+# ==============================================
+# Server Startup
+# ==============================================
+
 if __name__ == '__main__':
     print("Starting Flask server...")
-    print("Server running at http://localhost:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True) 
+    try:
+        # Test Supabase connection
+        test_response = supabase.table('users').select("count").limit(1).execute()
+        print("Supabase connection test successful")
+        
+        # Start server
+        print("Server running at http://localhost:5000")
+        app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+    except Exception as e:
+        print("Error starting server:", str(e))
+        print("Please check your internet connection and Supabase credentials")
+        raise 

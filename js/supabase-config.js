@@ -1,6 +1,6 @@
-// Your Supabase Project URL and Anon Key
-const SUPABASE_URL = 'https://puwefvbaowdflcidyzto.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1d2VmdmJhb3dkZmxjaWR5enRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwOTcyODcsImV4cCI6MjA2MzY3MzI4N30.TpZ8rmEP8rPHH66fmB_NJxAceXMoPHmD9DJpCc17cjE'
+// Your Supabase Project URL and 
+const SUPABASE_URL = 'https://ldubebcnuxdzolgbrrdm.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkdWJlYmNudXhkem9sZ2JycmRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2MjQ0NDEsImV4cCI6MjA2NDIwMDQ0MX0.p-HHjKgR6SynlT67OuPZY5PK5CLzBGDu1AhV5WjvjM4'
 
 // Create Supabase client
 const { createClient } = supabase;

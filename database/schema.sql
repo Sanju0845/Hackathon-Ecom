@@ -1,125 +1,106 @@
--- Drop existing triggers first
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-DROP TRIGGER IF EXISTS on_auth_user_created ON users;
+-- Enable UUID extension if not already enabled
+-- Used by uuid_generate_v4() and gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto"; -- For gen_random_uuid()
 
--- Drop existing functions with CASCADE to handle dependencies
-DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
-
--- Drop existing policies
-DROP POLICY IF EXISTS "Users can view own data" ON users;
-DROP POLICY IF EXISTS "Users can update own data" ON users;
-DROP POLICY IF EXISTS "Users can view own profile" ON user_profiles;
-DROP POLICY IF EXISTS "Users can update own profile" ON user_profiles;
-DROP POLICY IF EXISTS "Users can insert own profile" ON user_profiles;
-DROP POLICY IF EXISTS "Anyone can view products" ON products;
-DROP POLICY IF EXISTS "Users can view own orders" ON orders;
-DROP POLICY IF EXISTS "Users can create own orders" ON orders;
-DROP POLICY IF EXISTS "Users can view own order items" ON order_items;
-
--- Drop existing tables
+-- Drop tables with CASCADE to handle foreign key dependencies
+DROP TABLE IF EXISTS cart_items CASCADE;
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS user_profiles CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
--- Create users table
-CREATE TABLE IF NOT EXISTS users (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+-- Create Tables in correct order (independent tables first)
 
--- Create user_profiles table for additional user information
-CREATE TABLE IF NOT EXISTS user_profiles (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(255),
-    phone VARCHAR(20),
-    address TEXT,
+-- 1. Create users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create orders table
-CREATE TABLE IF NOT EXISTS orders (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    total DECIMAL(10,2) NOT NULL,
-    status VARCHAR(50) DEFAULT 'pending',
-    payment_method VARCHAR(50),
+-- 2. Create categories table
+CREATE TABLE categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create order_items table
-CREATE TABLE IF NOT EXISTS order_items (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
-    product_id UUID,
-    quantity INTEGER NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create products table
-CREATE TABLE IF NOT EXISTS products (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- 3. Create products table
+CREATE TABLE products (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    image_url TEXT,
     stock INTEGER DEFAULT 0,
+    image_url TEXT,
+    category_id UUID REFERENCES categories(id),
+    images TEXT[],
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Create user_profiles table
+CREATE TABLE user_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    country VARCHAR(100),
+    postal_code VARCHAR(20),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Create orders table
+CREATE TABLE orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    total DECIMAL(10,2) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    address TEXT NOT NULL,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    country VARCHAR(100),
+    postal_code VARCHAR(20),
+    payment_method VARCHAR(50),
+    upi_id VARCHAR(100),
+    items JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Create order_items table
+CREATE TABLE order_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id),
+    quantity INTEGER NOT NULL,
+    price_at_time DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create RLS (Row Level Security) Policies
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-
--- Users can read their own data
-CREATE POLICY "Users can view own data" ON users
-    FOR SELECT USING (auth.uid() = id);
-
--- Users can update their own data
-CREATE POLICY "Users can update own data" ON users
-    FOR UPDATE USING (auth.uid() = id);
-
--- Users can view their own profile
-CREATE POLICY "Users can view own profile" ON user_profiles
-    FOR SELECT USING (auth.uid() = user_id);
-
--- Users can update their own profile
-CREATE POLICY "Users can update own profile" ON user_profiles
-    FOR UPDATE USING (auth.uid() = user_id);
-
--- Users can insert their own profile
-CREATE POLICY "Users can insert own profile" ON user_profiles
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Anyone can view products
-CREATE POLICY "Anyone can view products" ON products
-    FOR SELECT USING (true);
-
--- Users can view their own orders
-CREATE POLICY "Users can view own orders" ON orders
-    FOR SELECT USING (auth.uid() = user_id);
-
--- Users can create their own orders
-CREATE POLICY "Users can create own orders" ON orders
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Users can view their own order items
-CREATE POLICY "Users can view own order items" ON order_items
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM orders
-            WHERE orders.id = order_items.order_id
-            AND orders.user_id = auth.uid()
-        )
-    );
+-- 7. Create cart_items table
+CREATE TABLE cart_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, product_id)
+);
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -127,21 +108,80 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+CREATE INDEX IF NOT EXISTS idx_cart_items_user_product ON cart_items(user_id, product_id);
 
--- Create function to handle user registration
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO user_profiles (user_id)
-    VALUES (NEW.id)
-    ON CONFLICT (user_id) DO NOTHING;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Insert default categories
+INSERT INTO categories (name, description) VALUES
+('Electronics', 'Electronic devices and accessories'),
+('Clothing', 'Fashion and apparel'),
+('Home & Kitchen', 'Home goods and kitchen appliances'),
+('Books', 'Books and publications'),
+('Sports', 'Sports equipment and accessories'),
+('Beauty', 'Beauty and personal care products'),
+('Toys', 'Toys and games'),
+('Other', 'Miscellaneous items');
 
--- Create trigger for new user registration
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW
-    EXECUTE FUNCTION handle_new_user(); 
+-- Create admin user (password should be hashed in the application)
+INSERT INTO users (email, password, name) VALUES
+('admin@gmail.com', 'admin', 'Admin User');
+
+-- Create admin profile
+INSERT INTO user_profiles (user_id, name, phone, address)
+SELECT id, 'Admin User', '', 'Admin Address'
+FROM users WHERE email = 'admin@gmail.com';
+
+-- Insert sample products
+INSERT INTO products (name, description, price, stock, image_url, category_id, images) 
+SELECT 
+    'iPhone 13 Pro',
+    'Latest Apple iPhone with amazing camera and performance',
+    999.99,
+    50,
+    'https://example.com/iphone13.jpg',
+    id,
+    ARRAY['https://example.com/iphone13_1.jpg', 'https://example.com/iphone13_2.jpg']
+FROM categories WHERE name = 'Electronics';
+
+INSERT INTO products (name, description, price, stock, image_url, category_id, images) 
+SELECT 
+    'Nike Air Max',
+    'Comfortable running shoes with great support',
+    129.99,
+    100,
+    'https://example.com/nike.jpg',
+    id,
+    ARRAY['https://example.com/nike_1.jpg', 'https://example.com/nike_2.jpg']
+FROM categories WHERE name = 'Sports';
+
+INSERT INTO products (name, description, price, stock, image_url, category_id, images) 
+SELECT 
+    'Smart Watch',
+    'Track your fitness and stay connected',
+    199.99,
+    75,
+    'https://example.com/watch.jpg',
+    id,
+    ARRAY['https://example.com/watch_1.jpg', 'https://example.com/watch_2.jpg']
+FROM categories WHERE name = 'Electronics';
+
+INSERT INTO products (name, description, price, stock, image_url, category_id, images) 
+SELECT 
+    'Coffee Maker',
+    'Automatic coffee maker with timer',
+    79.99,
+    30,
+    'https://example.com/coffee.jpg',
+    id,
+    ARRAY['https://example.com/coffee_1.jpg', 'https://example.com/coffee_2.jpg']
+FROM categories WHERE name = 'Home & Kitchen';
+
+INSERT INTO products (name, description, price, stock, image_url, category_id, images) 
+SELECT 
+    'Wireless Earbuds',
+    'High-quality sound with noise cancellation',
+    149.99,
+    60,
+    'https://example.com/earbuds.jpg',
+    id,
+    ARRAY['https://example.com/earbuds_1.jpg', 'https://example.com/earbuds_2.jpg']
+FROM categories WHERE name = 'Electronics'; 

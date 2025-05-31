@@ -600,19 +600,19 @@
 
             <div class="payment-apps">
                 <div class="payment-app" onclick="openPaymentApp('phonepe')">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/PhonePe_Logo.svg/2560px-PhonePe_Logo.svg.png" alt="PhonePe">
+                    <img src="https://cdn.brandfetch.io/idcE0OdG8i/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" alt="PhonePe">
                     <span>PhonePe</span>
                 </div>
                 <div class="payment-app" onclick="openPaymentApp('gpay')">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Google_Pay_Logo_%282020%29.svg/2560px-Google_Pay_Logo_%282020%29.svg.png" alt="Google Pay">
+                    <img src="https://img.icons8.com/?size=100&id=w0MU3YDSYG7T&format=png&color=000000" alt="Google Pay">
                     <span>Google Pay</span>
                         </div>
                 <div class="payment-app" onclick="openPaymentApp('paytm')">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Paytm_logo.svg/2560px-Paytm_logo.svg.png" alt="Paytm">
+                    <img src="https://img.icons8.com/?size=100&id=68067&format=png&color=000000" alt="Paytm">
                     <span>Paytm</span>
                     </div>
                 <div class="payment-app" onclick="openPaymentApp('bhim')">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/BHIM_Logo.svg/2560px-BHIM_Logo.svg.png" alt="BHIM">
+                    <img src="https://cdn.brandfetch.io/idK53pO65u/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" alt="BHIM">
                     <span>BHIM</span>
                         </div>
                 <div class="payment-app" onclick="openPaymentApp('amazonpay')">
@@ -800,40 +800,49 @@
 
         // Get checkout data from localStorage
         function loadCheckoutData() {
-        const checkoutData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
+            const checkoutData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             
-        // Populate user data
-        document.getElementById('name').value = user.name || '';
-        document.getElementById('address').value = user.address || '';
-        document.getElementById('phone').value = user.phone || '';
+            // Populate user data
+            const nameInput = document.getElementById('name');
+            const addressInput = document.getElementById('address');
+            const phoneInput = document.getElementById('phone');
+            
+            if (nameInput) nameInput.value = user.name || '';
+            if (addressInput) addressInput.value = user.address || '';
+            if (phoneInput) phoneInput.value = user.phone || '';
 
-        // Display order items
-                const orderItems = document.getElementById('orderItems');
-        const subtotal = document.getElementById('subtotal');
-        const total = document.getElementById('total');
+            // Display order items
+            const orderItems = document.getElementById('orderItems');
+            const subtotal = document.getElementById('subtotal');
+            const total = document.getElementById('total');
 
-        if (checkoutData.items && checkoutData.items.length > 0) {
-            orderItems.innerHTML = checkoutData.items.map(item => `
+            if (checkoutData.items && checkoutData.items.length > 0) {
+                if (orderItems) {
+                    orderItems.innerHTML = checkoutData.items.map(item => `
                         <div class="order-item">
-                        <img src="${item.products?.image_url || 'https://via.placeholder.com/80'}" 
-                         alt="${item.products?.name || 'Product'}"
-                            onerror="this.src='https://via.placeholder.com/80'">
+                            <img src="${item.products?.image_url || 'https://via.placeholder.com/80'}" 
+                             alt="${item.products?.name || 'Product'}"
+                                onerror="this.src='https://via.placeholder.com/80'">
                             <div class="item-details">
-                        <div class="item-name">${item.products?.name || 'Product'}</div>
-                        <div class="item-price">
-                            ₹${parseFloat(item.products?.price || 0).toFixed(2)} × ${item.quantity}
+                                <div class="item-name">${item.products?.name || 'Product'}</div>
+                                <div class="item-price">
+                                    ₹${parseFloat(item.products?.price || 0).toFixed(2)} × ${item.quantity}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    </div>
-            `).join('');
+                    `).join('');
+                }
 
-            subtotal.textContent = `₹${checkoutData.total.toFixed(2)}`;
-            total.textContent = `₹${checkoutData.total.toFixed(2)}`;
+                if (subtotal) subtotal.textContent = `₹${checkoutData.total.toFixed(2)}`;
+                if (total) total.textContent = `₹${checkoutData.total.toFixed(2)}`;
 
                 // Generate initial QR code for default payment method
-                const defaultMethod = document.querySelector('.payment-app.active').getAttribute('data-method');
-                generateQRCode(defaultMethod, checkoutData.total);
+                const activePaymentMethod = document.querySelector('.payment-app.active');
+                if (activePaymentMethod) {
+                    const defaultMethod = activePaymentMethod.getAttribute('data-method');
+                    generateQRCode(defaultMethod, checkoutData.total);
+                }
             }
         }
 
@@ -844,9 +853,18 @@
             }
 
             // Validate required fields
-            const name = document.getElementById('name').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const phone = document.getElementById('phone').value.trim();
+            const nameInput = document.getElementById('name');
+            const addressInput = document.getElementById('address');
+            const phoneInput = document.getElementById('phone');
+
+            if (!nameInput || !addressInput || !phoneInput) {
+                alert('Required form elements not found');
+                return;
+            }
+
+            const name = nameInput.value.trim();
+            const address = addressInput.value.trim();
+            const phone = phoneInput.value.trim();
 
             if (!name || !address || !phone) {
                 alert('Please fill in all required fields');
@@ -869,79 +887,85 @@
                 return;
             }
 
+            const activePaymentMethod = document.querySelector('.payment-app.active');
+            if (!activePaymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+
             // Create order data object
             const orderData = {
-                name: name,
-                address: address,
-                phone: phone,
-                payment_method: document.querySelector('.payment-app.active').getAttribute('data-method'),
-                upi_id: '9493562061@fam',
-                items: checkoutData.items?.map(item => ({
-                    product_id: item.products?.id,
-                    quantity: item.quantity,
-                    price: item.products?.price
-                })) || [],
-                total: checkoutData.total || 0,
-                user_id: user.id,
-                status: 'pending',
-                created_at: new Date().toISOString()
+                user_id: checkoutData.user_id,
+                name: checkoutData.name,
+                address: checkoutData.address,
+                phone: checkoutData.phone,
+                payment_method: checkoutData.payment_method,
+                upi_id: checkoutData.upi_id,
+                items: checkoutData.items,
+                total: checkoutData.total
             };
 
+            // Save order data to backend API instead of Supabase
+            let orderResult, orderError;
             try {
-                // Save order data to Supabase with returning option
-                const { data: orderResult, error: orderError } = await supabaseClient
-                    .from('orders')
-                    .insert([orderData])
-                    .select()
-                    .single();
-
-                if (orderError) {
-                    console.error('Order creation error:', orderError);
-                    throw new Error(orderError.message || 'Failed to create order');
+                const response = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create order');
                 }
-
-                if (!orderResult) {
-                    throw new Error('No order data returned');
-                }
-
-                // Save customer data to Supabase
-                const customerData = {
-                    user_id: user.id,
-                    name: name,
-                    phone: phone,
-                    address: address,
-                    last_order_date: new Date().toISOString()
-                };
-
-                const { error: customerError } = await supabaseClient
-                    .from('customers')
-                    .upsert([customerData], {
-                        onConflict: 'user_id'
-                    });
-
-                if (customerError) {
-                    console.error('Customer update error:', customerError);
-                }
-
-                // Show success animation
-                showOrderSuccessAnimation(orderResult.id);
-
-                // Clear checkout data
-                localStorage.removeItem('checkout_data');
-
-                // Save user info for future use
-                const updatedUser = {
-                    ...user,
-                    name: name,
-                    phone: phone,
-                    address: address
-                };
-                localStorage.setItem('user', JSON.stringify(updatedUser));
-
-            } catch (error) {
-                console.error('Payment error:', error);
-                alert(error.message || 'Failed to process payment. Please try again.');
+                orderResult = { id: data.order_id };
+            } catch (err) {
+                orderError = err;
             }
+            if (orderError) {
+                console.error('Order creation error:', orderError);
+                throw new Error(orderError.message || 'Failed to create order');
+            }
+            if (!orderResult) {
+                throw new Error('No order data returned');
+            }
+
+            // Show success animation
+            showOrderSuccessAnimation(orderResult.id);
+
+            // Clear checkout data
+            localStorage.removeItem('checkout_data');
+
+            // Save user info for future use
+            const updatedUser = {
+                ...user,
+                name: name,
+                phone: phone,
+                address: address
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+
+            // After inserting the order and getting orderResult.id
+            const orderItems = checkoutData.items?.map(item => ({
+                order_id: orderResult.id,
+                product_id: item.products?.id,
+                quantity: item.quantity,
+                price: item.products?.price
+            }));
+
+            if (orderItems.length > 0) {
+                const { error: orderItemsError } = await supabaseClient
+                    .from('order_items')
+                    .insert(orderItems);
+
+                if (orderItemsError) {
+                    console.error('Order items insert error:', orderItemsError);
+                    // Optionally show an error to the user
+                }
+            }
+
         }
 
         function showOrderSuccessAnimation(orderId) {

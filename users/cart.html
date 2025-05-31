@@ -725,20 +725,36 @@
         }
 
         function checkout() {
-            const cartItems = document.querySelectorAll('.cart-item');
-            const total = parseFloat(document.querySelector('.total-row .summary-value').textContent.replace('₹', ''));
-            
-            const checkoutData = {
-                items: Array.from(cartItems).map(item => ({
+            // Get cart items from localStorage or Supabase (if available)
+            let checkoutData = { items: [], total: 0 };
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.token) {
+                window.location.href = '/auth/login.html';
+                return;
+            }
+            // Try to get cart from localStorage (for fallback)
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length > 0) {
+                checkoutData.items = cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.qty,
+                    image: item.image_url
+                }));
+                checkoutData.total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            } else {
+                // Fallback: try to get from DOM (if rendered)
+                const cartItems = document.querySelectorAll('.cart-item');
+                checkoutData.items = Array.from(cartItems).map(item => ({
                     id: item.dataset.id,
                     name: item.querySelector('.item-name').textContent,
                     price: parseFloat(item.querySelector('.item-price').textContent.replace('₹', '')),
                     quantity: parseInt(item.querySelector('.quantity').textContent),
                     image: item.querySelector('img').src
-                })),
-                total: total
-            };
-            
+                }));
+                checkoutData.total = checkoutData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            }
             localStorage.setItem('checkout_data', JSON.stringify(checkoutData));
             window.location.href = 'billing.html';
         }

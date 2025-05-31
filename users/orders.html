@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - Our Store</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="../js/config.js" type="module"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;500;700;800&display=swap" rel="stylesheet">
@@ -496,10 +497,9 @@
                     .from('orders')
                     .select(`
                         *,
-                        order_items!inner (
+                        order_items (
                             id,
                             quantity,
-                            size,
                             product_id
                         )
                     `)
@@ -577,7 +577,6 @@
                                         <h4>${item.product?.name || 'Unknown Product'}</h4>
                                         <p class="item-price">₹${(item.product?.price || 0).toFixed(2)}</p>
                                         <p class="item-quantity">Quantity: ${item.quantity}</p>
-                                        ${item.size ? `<p class="item-size">Size: ${item.size}</p>` : ''}
                                     </div>
                                 </div>
                             `).join('')}

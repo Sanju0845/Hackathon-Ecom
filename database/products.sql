@@ -1,0 +1,13 @@
+INSERT INTO products (name, description, price, stock, image_url, category)
+VALUES
+('Samsung Galaxy S24 Ultra', 'Samsung''s flagship smartphone with a 6.8-inch AMOLED display and 200MP camera.', 119999, 25, 'hhttps://www.abshop.in.th/wp-content/uploads/2024/05/Galaxy-S24-ULTRA-5G-TITANIUM-YELLOW-01.jpg', 'electronics'),
+('Vivo X100 Pro', 'High-end smartphone with triple-camera system and 5400mAh battery.', 89999, 30, 'https://kirtisales.in/wp-content/uploads/2024/04/VIVO-X100-PRO-16-512.jpg', 'electronics'),
+('Garmin Instinct 2 Solar', 'Rugged smartwatch with solar charging and exceptional battery life.', 36990, 40, 'https://res.garmin.com/en/products/010-02564-10/v/cf-sm-289bbc77-d6a6-41bf-99af-28ae6b58c321.jpg', 'electronics'),
+('Apple Watch Ultra 2', 'Advanced smartwatch with cellular connectivity and crash detection.', 89900, 35, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTymTdZnZPKi2zMzhQ7QYgfkQ7B6_PcSaqB8w&s', 'electronics'),
+('Nike Tech Fleece Hoodie', 'Men''s fleece hoodie with extra weight for structure and warmth.', 8995, 50, 'https://images.stockx.com/images/Nike-Tech-Fleece-Full-Zip-Hoodie-Black-ProductX.jpg', 'fashion'),
+('Nike Dri-FIT Pullover Hoodie', 'Men''s pullover hoodie made from 100% sustainable materials.', 3795, 60, 'https://i.ebayimg.com/images/g/750AAOSwZKBZKPUo/s-l1200.jpg', 'fashion'),
+('Allen Solly Beige Hoodie', 'Men''s beige full sleeves casual sweatshirt made of 100% cotton.', 2299, 40, 'https://rukminim2.flixcart.com/image/832/832/xif0q/sweatshirt/t/0/2/l-askwqrgf836857-allen-solly-original-imagv3f3g7g6qz7g.jpeg', 'fashion'),
+('ATommy Hilfiger Black Hoodie', 'Men''s black solid hooded hoodie with zipper closure.', 3499, 45, 'https://img01.ztat.net/article/spp-media-p1/a226c6842b1243ed9bda5253f7213045/ffac90789dd046e68671b37482ad4465.jpg', 'fashion'),
+('Spider-Man Logo Performance Hoodie', 'White hoodie from the active line, blending performance and style.', 3499, 30, 'https://www.redwolf.in/image/cache/catalog/hoodies/marvel-spider-man-logo-hoodie-india-back-600x800.jpg?m=1736163361', 'fashion'),
+('Nike Air Zoom Pegasus 41', 'Comfortable running shoes with responsive cushioning.', 10995, 70, 'https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco/d15d9326-cb42-430d-9abb-58a923e80205/AIR+ZOOM+PEGASUS+41+WIDE.png', 'sports'),
+('Nike Kobe 9 Elite High Protro', 'High-top basketball shoes with unique design elements.', 15999, 20, 'https://static.nike.com/a/images/f_auto/dpr_3.0,cs_srgb/w_363,c_limit/641adfe9-479a-4fba-9af0-2bb33e22eb1a/kobe-9-protro-how-kobe-bryant-s-endless-pursuit-of-perfection-redefined-a-masterpiece.jpg', 'sports');
