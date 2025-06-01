@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Product Reviews</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Plus+Jakarta+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+    <style>
+        body { background: #fafbfc; color: #181818; font-family: 'Plus Jakarta Sans', 'Montserrat', Arial, sans-serif; margin: 0; }
+        .container { max-width: 1100px; margin: 2rem auto; background: #fff; border-radius: 1.2rem; box-shadow: 0 4px 24px #e0e7ef13; padding: 2.5rem; }
+        h1 { font-size: 2rem; font-weight: 900; margin-bottom: 2rem; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .back-btn { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            padding: 0.7rem 1.5rem; 
+            background: #181818; 
+            color: #fff; 
+            border: none; 
+            border-radius: 0.7rem; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: background 0.2s; 
+        }
+        .back-btn:hover { background: #333; }
+        .product-select-row { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; }
+        select { padding: 0.7rem 1.5rem; border-radius: 0.7rem; border: 1.5px solid #ececec; font-size: 1rem; font-weight: 700; }
+        .reviews-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+        .reviews-table th, .reviews-table td { padding: 1rem; border-bottom: 1px solid #ececec; text-align: left; }
+        .reviews-table th { background: #f6f6f6; font-weight: 800; }
+        .star { color: #FFD600; font-size: 1.1rem; }
+        .review-content { color: #444; }
+        .review-date { color: #888; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <h1>Product Reviews (Admin)</h1>
+            <button class="back-btn" onclick="window.location.href='dashboard.html'">
+                <span class="material-icons-round">arrow_back</span>
+                Back to Dashboard
+            </button>
+        </div>
+        <div class="product-select-row">
+            <label for="productSelect">Select Product:</label>
+            <select id="productSelect"></select>
+        </div>
+        <table class="reviews-table" id="reviewsTable">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Rating</th>
+                    <th>Review</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+    let allProducts = [];
+    async function loadProducts() {
+        const hostname = window.location.hostname;
+        const port = window.location.port || '5000';
+        const baseUrl = `http://${hostname}:${port}`;
+        const response = await fetch(`${baseUrl}/api/products`);
+        allProducts = await response.json();
+        const select = document.getElementById('productSelect');
+        select.innerHTML = allProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        if (allProducts.length) loadReviews(allProducts[0].id);
+    }
+    document.getElementById('productSelect').onchange = (e) => loadReviews(e.target.value);
+    async function loadReviews(productId) {
+        const hostname = window.location.hostname;
+        const port = window.location.port || '5000';
+        const baseUrl = `http://${hostname}:${port}`;
+        const response = await fetch(`${baseUrl}/api/reviews/${productId}`);
+        const reviews = await response.json();
+        const tbody = document.querySelector('#reviewsTable tbody');
+        tbody.innerHTML = reviews.map(r => `
+            <tr>
+                <td>${r.user_name || 'Anonymous'}</td>
+                <td>${[1,2,3,4,5].map(i => `<span class='star material-icons-round'>${i<=r.rating?'star':'star_border'}</span>`).join('')}</td>
+                <td class='review-content'>${r.review}</td>
+                <td class='review-date'>${new Date(r.created_at).toLocaleDateString()}</td>
+            </tr>
+        `).join('');
+    }
+    loadProducts();
+    </script>
+</body>
+</html> 

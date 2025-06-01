@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import jwt
 from datetime import datetime, timedelta
 import bcrypt
+from flask import g
 
 # Load environment variables
 load_dotenv()
@@ -104,7 +105,7 @@ def register():
         if check_user.data:
             print('Email already exists')
             return jsonify({'error': 'Email already exists'}), 400
-
+        
         print('Hashing password...')
         hashed_password = hash_password(data['password'])
         print('Password hashed')
@@ -203,7 +204,7 @@ def login():
             user = user_response.data[0]
             
             # Verify password
-            if user.get('password') != data['password']:
+            if not bcrypt.checkpw(data['password'].encode('utf-8'), user.get('password').encode('utf-8')):
                 return jsonify({'error': 'Invalid password'}), 401
             
             # Generate token
@@ -747,6 +748,67 @@ def admin_order(id):
         return jsonify(response.data[0])
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+# ==============================================
+# Review Routes
+# ==============================================
+
+@app.route('/api/reviews', methods=['POST'])
+def post_review():
+    token = get_token_from_header()
+    if not token:
+        return jsonify({'error': 'Authentication required'}), 401
+    try:
+        payload = verify_token(token)
+        if not payload:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+        data = request.json
+        product_id = data.get('product_id')
+        rating = data.get('rating')
+        review = data.get('review')
+        if not product_id or not rating or not review:
+            return jsonify({'error': 'Missing required fields'}), 400
+        user_id = payload['user_id']
+        user_name = payload.get('name', 'Anonymous')
+        review_data = {
+            'product_id': product_id,
+            'user_id': user_id,
+            'user_name': user_name,
+            'rating': rating,
+            'review': review
+        }
+        response = supabase.table('reviews').insert([review_data]).execute()
+        if not response.data:
+            return jsonify({'error': 'Failed to save review'}), 500
+        return jsonify({'message': 'Review submitted successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/reviews/<product_id>', methods=['GET'])
+def get_reviews(product_id):
+    try:
+        response = supabase.table('reviews').select('*').eq('product_id', product_id).order('created_at', desc=True).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/reviews/ratings', methods=['GET'])
+def get_all_product_ratings():
+    try:
+        # Get average rating and count for each product
+        response = supabase.table('reviews').select('product_id, rating').execute()
+        ratings = {}
+        for r in response.data:
+            pid = r['product_id']
+            if pid not in ratings:
+                ratings[pid] = {'sum': 0, 'count': 0}
+            ratings[pid]['sum'] += r['rating']
+            ratings[pid]['count'] += 1
+        # Calculate average
+        result = {pid: {'avg': (v['sum']/v['count']) if v['count'] else 0, 'count': v['count']} for pid, v in ratings.items()}
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({}), 200
 
 # ==============================================
 # Static File Routes

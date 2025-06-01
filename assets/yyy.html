@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONE LIFE GRAPHIC T-SHIRT - SHOP.CO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* Top Banner */
+        .top-banner {
+            background-color: #000;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .close-banner {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* Header */
+        .header {
+            background-color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 40px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            background-color: #f9f9f9;
+            font-size: 14px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .cart-icon, .user-icon {
+            font-size: 20px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background-color: white;
+            padding: 15px 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        /* Product Images */
+        .product-images {
+            display: flex;
+            gap: 20px;
+        }
+
+        .thumbnail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .thumbnail.active {
+            border-color: #333;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .main-image {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .main-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        /* Product Info */
+        .product-info h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #000;
+        }
+
+        .price {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #000;
+        }
+
+        .description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .stock-info {
+            margin-bottom: 20px;
+        }
+
+        .stock-label {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .stock-count {
+            color: #ff4444;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Quantity Selector */
+        .quantity-section {
+            margin-bottom: 25px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .add-to-cart {
+            width: 100%;
+            background-color: #000;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Product Tabs */
+        .product-tabs {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            background-color: white;
+            padding: 0 20px;
+        }
+
+        .tab-headers {
+            display: flex;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .tab-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-header.active {
+            color: #000;
+            border-bottom-color: #000;
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 30px 20px;
+        }
+
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .reviews-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .reviews-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .sort-dropdown {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .write-review-btn {
+            background-color: #000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* Review Cards */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .review-card {
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reviewer-name {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .verified-badge {
+            width: 16px;
+            height: 16px;
+            background-color: #00aa00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+        }
+
+        .review-menu {
+            cursor: pointer;
+            color: #666;
+        }
+
+        .stars {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+
+        .star {
+            color: #ffd700;
+            font-size: 16px;
+        }
+
+        .star.empty {
+            color: #ddd;
+        }
+
+        .review-text {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .review-date {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .load-more {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .load-more-btn {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Banner -->
+    <div class="top-banner">
+        Sign up and get 20% off to your first order. <strong>Sign Up Now</strong>
+        <span class="close-banner">×</span>
+    </div>
+
+    
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Product Images -->
+        <div class="product-images">
+            <div class="thumbnail-list">
+                <div class="thumbnail active">
+                    <img src="/placeholder.svg?height=80&width=80" alt="Thumbnail 1">
+                </div>
+                <div class="thumbnail">
+                    <img src="/placeholder.svg?height=80&width=80" alt="Thumbnail 2">
+                </div>
+                <div class="thumbnail">
+                    <img src="/placeholder.svg?height=80&width=80" alt="Thumbnail 3">
+                </div>
+            </div>
+            <div class="main-image">
+                <img src="/placeholder.svg?height=500&width=400" alt="ONE LIFE GRAPHIC T-SHIRT">
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-info">
+            <h1>ONE LIFE GRAPHIC T-SHIRT</h1>
+            <div class="price">$260</div>
+            <p class="description">
+                This graphic t-shirt which is perfect for any occasion. Crafted from a soft and 
+                breathable fabric, it offers superior comfort and style.
+            </p>
+            
+            <div class="stock-info">
+                <div class="stock-label">Stock</div>
+                <div class="stock-count">40</div>
+            </div>
+
+            <div class="quantity-section">
+                <div class="quantity-controls">
+                    <button class="quantity-btn">−</button>
+                    <input type="number" class="quantity-input" value="1" min="1">
+                    <button class="quantity-btn">+</button>
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Product Tabs -->
+    <section class="product-tabs">
+        <div class="tab-headers">
+            <div class="tab-header">Product Details</div>
+            <div class="tab-header active">Rating & Reviews</div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <div class="reviews-header">
+                <h2 class="reviews-title">All Reviews (451)</h2>
+                <div class="reviews-controls">
+                    <span>⚙️</span>
+                    <select class="sort-dropdown">
+                        <option>Latest</option>
+                    </select>
+                    <button class="write-review-btn">Write a Review</button>
+                </div>
+            </div>
+
+            <div class="reviews-grid">
+                <!-- Review 1 -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Samantha D.</span>
+                            <span class="verified-badge">✓</span>
+                        </div>
+                        <span class="review-menu">⋯</span>
+                    </div>
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <p class="review-text">
+                        "I absolutely love this t-shirt! The design is unique and the fabric feels so 
+                        comfortable. As a fellow designer, I appreciate the attention to detail. It's 
+                        become my favorite go-to shirt."
+                    </p>
+                    <div class="review-date">Posted on August 14, 2023</div>
+                </div>
+
+                <!-- Review 2 -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Alex M.</span>
+                            <span class="verified-badge">✓</span>
+                        </div>
+                        <span class="review-menu">⋯</span>
+                    </div>
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star empty">★</span>
+                    </div>
+                    <p class="review-text">
+                        "The t-shirt exceeded my expectations! The colors are vibrant and the print 
+                        quality is top-notch. Being a UFUK designer myself, I'm quite picky about 
+                        aesthetics, and this t-shirt definitely gets a thumbs up from me."
+                    </p>
+                    <div class="review-date">Posted on August 15, 2023</div>
+                </div>
+
+                <!-- Review 3 -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Ethan R.</span>
+                            <span class="verified-badge">✓</span>
+                        </div>
+                        <span class="review-menu">⋯</span>
+                    </div>
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star empty">★</span>
+                    </div>
+                    <p class="review-text">
+                        "This t-shirt is a must-have for anyone who appreciates good design. The 
+                        minimalistic yet stylish pattern caught my eye, and the fit is perfect. I can 
+                        see the designer's touch in every aspect of this shirt."
+                    </p>
+                    <div class="review-date">Posted on August 16, 2023</div>
+                </div>
+
+                <!-- Review 4 -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Ava H.</span>
+                            <span class="verified-badge">✓</span>
+                        </div>
+                        <span class="review-menu">⋯</span>
+                    </div>
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <p class="review-text">
+                        "I'm not just wearing a t-shirt; I'm wearing a piece of design philosophy. 
+                        The intricate details and thoughtful layout of the design make this shirt a 
+                        conversation starter."
+                    </p>
+                    <div class="review-date">Posted on August 17, 2023</div>
+                </div>
+
+                <!-- Review 5 -->
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">Liam K.</span>
+                            <span class="verified-badge">✓</span>
+                        </div>
+                        <span class="review-menu">⋯</span>
+                    </div>
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star empty">★</span>
+                    </div>
+                    <p class="review-text">
+                        "This t-shirt is a fusion of comfort and creativity. The fabric is soft, and the 
+                        design speaks volumes about the designer's skill. It's like wearing a piece 
+                        of art that reflects my passion for both design and fashion."
+                    </p>
+                    <div class="review-date">Posted on August 18, 2023</div>
+                </div>
+            </div>
+
+            <div class="load-more">
+                <button class="load-more-btn">Load More Reviews</button>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

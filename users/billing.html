@@ -615,6 +615,10 @@
                     <img src="https://cdn.brandfetch.io/idK53pO65u/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" alt="BHIM">
                     <span>BHIM</span>
                         </div>
+                <div class="payment-app" onclick="openPaymentApp('phonepe')">
+                    <img src="https://cdn.brandfetch.io/idFw8DodCr/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" alt="PhonePe">
+                    <span>card</span>
+                </div>                        
                 <div class="payment-app" onclick="openPaymentApp('amazonpay')">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png" alt="Amazon Pay">
                     <span>Amazon Pay</span>
@@ -895,13 +899,17 @@
 
             // Create order data object
             const orderData = {
-                user_id: checkoutData.user_id,
-                name: checkoutData.name,
-                address: checkoutData.address,
-                phone: checkoutData.phone,
+                user_id: user.id,
+                name: name,
+                address: address,
+                phone: phone,
                 payment_method: checkoutData.payment_method,
                 upi_id: checkoutData.upi_id,
-                items: checkoutData.items,
+                items: (checkoutData.items || []).map(item => ({
+                    product_id: item.products?.id,
+                    quantity: item.quantity,
+                    price: item.products?.price
+                })),
                 total: checkoutData.total
             };
 
