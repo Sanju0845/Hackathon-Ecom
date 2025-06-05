@@ -13,7 +13,7 @@ A web-based e-commerce platform built with Python and HTML/CSS/JavaScript.
 ## Setup
 
 1. Clone the repository
-2. Install Python dependencies (if any)
+2. Install Python dependencies
 3. Run the server:
    ```
    python server.py

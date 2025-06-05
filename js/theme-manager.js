@@ -20,13 +20,41 @@ function initializePageTransitions() {
     const loadingOverlay = document.createElement('div');
     loadingOverlay.className = 'loading-overlay';
     loadingOverlay.style.display = 'none';
-    
-    const loadingImg = document.createElement('img');
-    loadingImg.src = '/assets/login-signup-loading.gif';
-    loadingImg.alt = 'Loading...';
-    loadingOverlay.appendChild(loadingImg);
-    
+    loadingOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+    `;
+    // Lottie container
+    const lottieContainer = document.createElement('div');
+    lottieContainer.id = 'loadingLottieContainer';
+    lottieContainer.style.width = '400px';
+    lottieContainer.style.height = '400px';
+    loadingOverlay.appendChild(lottieContainer);
     document.body.appendChild(loadingOverlay);
+
+    // Initialize Lottie animation
+    let lottieInstance = null;
+    function showLottie() {
+        if (!lottieInstance) {
+            lottieInstance = lottie.loadAnimation({
+                container: lottieContainer,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: '/assets/loading-signup.json'
+            });
+        } else {
+            lottieInstance.goToAndPlay(0);
+        }
+    }
 
     // Add click event listeners to all navigation links
     document.addEventListener('click', (e) => {
@@ -34,9 +62,10 @@ function initializePageTransitions() {
         if (link && link.href && !link.href.startsWith('javascript:')) {
             e.preventDefault();
             loadingOverlay.style.display = 'flex';
+            showLottie();
             setTimeout(() => {
                 window.location.href = link.href;
-            }, 5000); // Show animation for 5 seconds before navigation
+            }, 2000); // 2 seconds for faster transition
         }
     });
 }

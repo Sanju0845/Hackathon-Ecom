@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account - Our Store</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -447,6 +448,110 @@
             color: rgba(255, 255, 255, 0.8);
             line-height: 1.4;
         }
+
+        /* Loading overlay styles */
+        .loading-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999 !important;
+        }
+
+        #loadingLottieContainer {
+            width: 400px !important;
+            height: 400px !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+
+        /* Popup styles */
+        .popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            background: var(--bg-secondary);
+            box-shadow: 0 10px 30px var(--shadow);
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+            border: 1px solid var(--border);
+            max-width: 400px;
+        }
+
+        .popup.success {
+            border-left: 4px solid #10B981;
+        }
+
+        .popup.error {
+            border-left: 4px solid #EF4444;
+        }
+
+        .popup-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .popup.success .popup-icon {
+            background: #10B981;
+            color: white;
+        }
+
+        .popup.error .popup-icon {
+            background: #EF4444;
+            color: white;
+        }
+
+        .popup-content {
+            flex: 1;
+        }
+
+        .popup-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .popup-message {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -517,6 +622,31 @@
         </div>
     </div>
 
+    <div class="loading-overlay" id="loadingOverlay">
+        <div id="loadingLottieContainer"></div>
+    </div>
+
+    <!-- Add popup HTML structure -->
+    <div class="popup success" id="successPopup">
+        <div class="popup-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="popup-content">
+            <div class="popup-title">Account Created!</div>
+            <div class="popup-message">Please verify your email and login to continue.</div>
+        </div>
+    </div>
+
+    <div class="popup error" id="errorPopup">
+        <div class="popup-icon">
+            <i class="fas fa-exclamation"></i>
+        </div>
+        <div class="popup-content">
+            <div class="popup-title">Error</div>
+            <div class="popup-message">Something went wrong. Please try again.</div>
+        </div>
+    </div>
+
     <script>
         // Initialize Supabase client with correct version
         const supabaseUrl = 'https://puwefvbaowdflcidyzto.supabase.co';
@@ -524,6 +654,24 @@
         
         // Create Supabase client using the imported library
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        function showPopup(type, title, message) {
+            const popup = document.getElementById(type + 'Popup');
+            const popupTitle = popup.querySelector('.popup-title');
+            const popupMessage = popup.querySelector('.popup-message');
+            
+            popupTitle.textContent = title;
+            popupMessage.textContent = message;
+            popup.style.display = 'flex';
+            
+            setTimeout(() => {
+                popup.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                    popup.style.animation = 'slideIn 0.3s ease-out';
+                }, 300);
+            }, 3000);
+        }
 
         async function handleSignup(event) {
             event.preventDefault();
@@ -547,8 +695,6 @@
                 if (password.length < 6) {
                     throw new Error('Password must be at least 6 characters');
                 }
-
-                console.log('Attempting to sign up with:', { email, password, name: fullName });
 
                 // Register user through our server API
                 const response = await fetch('/api/register', {
@@ -577,23 +723,17 @@
                         name: data.name
                     }));
 
-                    alert('Account created successfully! You can now log in.');
-                    window.location.href = 'login.html';
+                    showPopup('success', 'Account Created!', 'Please verify your email and login to continue.');
+                    
+                    // Redirect to login page after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 3000);
                 }
 
             } catch (error) {
                 console.error('Signup error:', error);
-                showError('emailError', error.message || 'Failed to create account. Please try again.');
-            }
-        }
-
-        function showError(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-            } else {
-                alert(message);
+                showPopup('error', 'Error', error.message || 'Failed to create account. Please try again.');
             }
         }
 
@@ -602,6 +742,41 @@
             if (form) {
                 form.addEventListener('submit', handleSignup);
             }
+
+            // Initialize theme and page transitions
+            window.themeManager.initializeTheme();
+            window.themeManager.initializePageTransitions();
+
+            // Initialize Lottie animation
+            let lottieInstance = null;
+            function showLottie() {
+                const container = document.getElementById('loadingLottieContainer');
+                if (!lottieInstance) {
+                    lottieInstance = lottie.loadAnimation({
+                        container: container,
+                        renderer: 'svg',
+                        loop: true,
+                        autoplay: true,
+                        path: '../assets/loading-signup.json'
+                    });
+                } else {
+                    lottieInstance.goToAndPlay(0);
+                }
+            }
+
+            // Add click event listeners to navigation links
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link && link.href && !link.href.startsWith('javascript:')) {
+                    e.preventDefault();
+                    const overlay = document.querySelector('.loading-overlay');
+                    overlay.style.display = 'flex';
+                    showLottie();
+                    setTimeout(() => {
+                        window.location.href = link.href;
+                    }, 2000);
+                }
+            });
         });
 
         // Theme toggle functionality

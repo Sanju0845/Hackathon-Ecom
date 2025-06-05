@@ -12,7 +12,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/shared-styles.css">
     <script src="js/theme-manager.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
+        /* Loading overlay styles */
+        .loading-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999 !important;
+        }
+
+        .loading-overlay img {
+            width: 400px !important;
+            height: 400px !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain !important;
+            image-rendering: -webkit-optimize-contrast !important;
+            image-rendering: crisp-edges !important;
+            transform: scale(1.5) !important;
+        }
+
         :root {
             /* Light theme variables */
             --bg-primary-light: #fff;
