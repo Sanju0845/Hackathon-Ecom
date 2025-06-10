@@ -4,14 +4,40 @@ function toggleTheme() {
     const currentTheme = html.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     
+    // Add rotation animation
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) {
+        btn.classList.add('rotating');
+        setTimeout(() => btn.classList.remove('rotating'), 500);
+    }
+    
+    // Update theme
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
+    
+    // Update icon and text
+    setTimeout(updateThemeUI, 250);
+}
+
+function updateThemeUI() {
+    const icon = document.getElementById('themeIcon');
+    const text = document.getElementById('themeText');
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    
+    if (icon) {
+        icon.textContent = currentTheme === 'dark' ? 'light_mode' : 'dark_mode';
+    }
+    
+    if (text) {
+        text.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    }
 }
 
 // Initialize theme from localStorage
 function initializeTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeUI();
 }
 
 // Add loading animation to page transitions

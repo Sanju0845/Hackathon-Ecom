@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Plus+Jakarta+Sans:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
     <style>
@@ -436,10 +437,89 @@
         .animation-overlay.active {
             display: flex;
         }
+
+        .back-to-home {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            background: #fff;
+            color: #181818;
+            border: 1.5px solid #ececec;
+            border-radius: 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .back-to-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            background: #f6f6f6;
+        }
+
+        .back-to-home .material-icons-round {
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .back-to-home {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .notification.success {
+            border-left: 4px solid #4CAF50;
+        }
+        .notification.error {
+            border-left: 4px solid #f44336;
+        }
+        .notification .material-icons-round {
+            font-size: 1.5rem;
+        }
+        .notification.success .material-icons-round {
+            color: #4CAF50;
+        }
+        .notification.error .material-icons-round {
+            color: #f44336;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 <body>
+    <button class="back-to-home" onclick="window.location.href='/users/products.html'">
+        <span class="material-icons-round">arrow_back</span>
+        Back to Home
+    </button>
     <div class="container">
         <div class="product-card product-detail-container">
             <div class="product-gallery">
@@ -682,51 +762,177 @@
             </div>
         `).join('');
         // Update count and average
-        reviewCount.textContent = `(${allReviews.length} Review${allReviews.length === 1 ? '' : 's'})`;
-        const avg = allReviews.length ? (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / allReviews.length).toFixed(1) : '0.0';
-        averageRating.textContent = avg;
-        // Show/hide load more
-        loadMoreBtn.style.display = (end < reviews.length) ? 'block' : 'none';
+        reviewCount.textContent = `(${reviews.length} Reviews)`;
+        averageRating.textContent = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : '0.0';
     }
 
-    // --- Review Modal Logic ---
-    let modalRating = 0;
-    const starsModal = document.querySelectorAll('#ratingStarsModal .star');
+    // Initialize Lottie animation
+    let animation;
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            animation = lottie.loadAnimation({
+                container: document.getElementById('addToCartAnimation'),
+                renderer: 'svg',
+                loop: false,
+                autoplay: false,
+                path: '../assets/addtocart.json'
+            });
+
+            // Add error handling for animation loading
+            animation.addEventListener('error', (error) => {
+                console.error('Animation loading error:', error);
+                showNotification('Failed to load animation', 'error');
+            });
+        } catch (error) {
+            console.error('Error initializing animation:', error);
+        }
+    });
+
+    // Function to show animation
+    function showAddToCartAnimation() {
+        const overlay = document.querySelector('.animation-overlay');
+        if (!overlay) return;
+
+        overlay.classList.add('active');
+        
+        if (animation) {
+            animation.goToAndPlay(0);
+            
+            // Hide overlay after animation completes
+            animation.addEventListener('complete', () => {
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 500);
+            });
+        } else {
+            // Fallback if animation fails to load
+            setTimeout(() => {
+                overlay.classList.remove('active');
+            }, 1000);
+        }
+    }
+
+    // Add to cart functionality
+    async function addToCart(product, quantity) {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            if (!user || !user.token) {
+                localStorage.setItem('redirectAfterLogin', window.location.href);
+                localStorage.setItem('pendingCartAction', JSON.stringify({
+                    action: 'add',
+                    productId: product.id,
+                    quantity: quantity
+                }));
+                window.location.href = '/auth/login.html';
+                return;
+            }
+
+            const hostname = window.location.hostname;
+            const port = window.location.port || '5000';
+            const baseUrl = `http://${hostname}:${port}`;
+
+            const response = await fetch(`${baseUrl}/api/cart/add`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify({
+                    product_id: product.id,
+                    quantity: quantity
+                }),
+                cache: 'no-cache'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to add to cart');
+            }
+
+            const result = await response.json();
+            console.log('Add to cart result:', result);
+
+            // Show animation
+            showAddToCartAnimation();
+
+            // Show success notification
+            showNotification('Added to cart successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
+                localStorage.removeItem('user');
+                window.location.href = '/auth/login.html';
+                return;
+            }
+            showNotification('Failed to add to cart. Please try again.', 'error');
+        }
+    }
+
+    // Show notification
+    function showNotification(message, type = 'success') {
+        // Remove any existing notification
+        const existing = document.querySelector('.notification');
+        if (existing) existing.remove();
+
+        // Create notification
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="material-icons-round">${type === 'success' ? 'check_circle' : 'error_outline'}</span>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Add show class after a small delay for animation
+        setTimeout(() => notification.classList.add('show'), 50);
+
+        // Remove notification after delay
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 400);
+        }, 2500);
+    }
+
+    // --- Review Submission Logic ---
+    const reviewForm = document.getElementById('reviewForm');
+    const ratingStarsModal = document.getElementById('ratingStarsModal');
     const ratingValueModal = document.getElementById('ratingValueModal');
-    starsModal.forEach(star => {
-        star.addEventListener('mouseover', () => {
-            const rating = parseInt(star.dataset.rating);
-            updateStarsModal(rating);
-        });
-        star.addEventListener('mouseout', () => {
-            updateStarsModal(modalRating);
-        });
-        star.addEventListener('click', () => {
-            modalRating = parseInt(star.dataset.rating);
-            updateStarsModal(modalRating);
-            ratingValueModal.textContent = `${modalRating}/5`;
+    let selectedRating = 0;
+
+    // Handle star selection
+    ratingStarsModal.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.getAttribute('data-rating'));
+            ratingValueModal.textContent = `${selectedRating}/5`;
+            ratingStarsModal.querySelectorAll('.star').forEach((s, i) => {
+                s.classList.toggle('active', i < selectedRating);
+            });
         });
     });
-    function updateStarsModal(rating) {
-        starsModal.forEach(star => {
-            const starRating = parseInt(star.dataset.rating);
-            star.classList.toggle('active', starRating <= rating);
-        });
-    }
-    document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+
+    // Handle review form submission
+    reviewForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        const reviewText = reviewForm.querySelector('.review-textarea').value.trim();
+        if (!selectedRating || !reviewText) {
+            showNotification('Please select a rating and write a review.', 'error');
+            return;
+        }
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user || !user.token) {
-            alert('Please log in to submit a review.');
-            setTimeout(() => { window.location.href = '/auth/login.html'; }, 1200);
+            window.location.href = '/auth/login.html';
             return;
         }
-        if (modalRating === 0) {
-            alert('Please select a rating.');
-            return;
-        }
-        const reviewText = document.querySelector('#reviewForm textarea').value;
         const productId = new URLSearchParams(window.location.search).get('id');
+        if (!productId) {
+            showNotification('Product not found.', 'error');
+            return;
+        }
         try {
             const hostname = window.location.hostname;
             const port = window.location.port || '5000';
@@ -740,68 +946,28 @@
                 },
                 body: JSON.stringify({
                     product_id: productId,
-                    rating: modalRating,
+                    rating: selectedRating,
                     review: reviewText
                 })
             });
-            if (!response.ok) throw new Error('Failed to submit review');
-            document.getElementById('reviewForm').reset();
-            modalRating = 0;
-            updateStarsModal(0);
-            ratingValueModal.textContent = '0/5';
-            reviewModalOverlay.style.display = 'none';
-            loadReviews();
-        } catch (error) {
-            alert('Failed to submit review. Please try again.');
-        }
-    });
-    // --- Add to Cart (existing logic) ---
-    const animation = lottie.loadAnimation({
-        container: document.getElementById('addToCartAnimation'),
-        renderer: 'svg',
-        loop: false,
-        autoplay: false,
-        path: '../assets/addtocart.json'
-    });
-        function addToCart(product, qty) {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (!user || !user.token) {
-                alert('Please log in to add to cart.');
-                setTimeout(() => { window.location.href = '/auth/login.html'; }, 1200);
-                return;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to submit review');
             }
-            const hostname = window.location.hostname;
-            const port = window.location.port || '5000';
-            const baseUrl = `http://${hostname}:${port}`;
-            fetch(`${baseUrl}/api/cart/add`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
-                },
-                body: JSON.stringify({ product_id: product.id, quantity: qty }),
-                cache: 'no-cache'
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Failed to add to cart');
-                }
-            // Show animation
-            const overlay = document.querySelector('.animation-overlay');
-            overlay.classList.add('active');
-            animation.goToAndPlay(0);
-            animation.addEventListener('complete', () => {
-                setTimeout(() => {
-                    overlay.classList.remove('active');
-                }, 500);
-            });
-            })
-            .catch(error => {
-                alert(error.message || 'Failed to add to cart');
-            });
+            showNotification('Review submitted successfully!', 'success');
+            // Close modal and reset form
+            document.getElementById('reviewModalOverlay').style.display = 'none';
+            reviewForm.reset();
+            selectedRating = 0;
+            ratingValueModal.textContent = '0/5';
+            ratingStarsModal.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+            // Reload reviews
+            await loadReviews();
+        } catch (error) {
+            showNotification('Failed to submit review. Please try again.', 'error');
+            console.error('Review submit error:', error);
         }
+    });
     </script>
 </body>
-</html> 
+</html>

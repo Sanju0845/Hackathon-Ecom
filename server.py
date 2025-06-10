@@ -28,6 +28,10 @@ except Exception as e:
     print("Error initializing Supabase client:", str(e))
     raise
 
+# Get admin credentials from environment variables
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+
 # ==============================================
 # Helper Functions
 # ==============================================
@@ -178,21 +182,6 @@ def login():
         if 'email' not in data or 'password' not in data:
             return jsonify({'error': 'Email and password are required'}), 400
 
-        # Check if it's an admin login
-        if data['email'] == 'admin@gmail.com' and data['password'] == 'admin':
-            admin_data = {
-                'id': 'admin',
-                'email': 'admin@gmail.com',
-                'name': 'Admin',
-                'is_admin': True,
-                'role': 'admin'
-            }
-            token = generate_token(admin_data)
-            if not token:
-                return jsonify({'error': 'Failed to generate token'}), 500
-            admin_data['token'] = token
-            return jsonify(admin_data)
-        
         # Regular user login
         try:
             # First check if user exists
@@ -230,6 +219,45 @@ def login():
             
     except Exception as e:
         print('Login error:', str(e))
+        return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
+
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    try:
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+            
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        if 'email' not in data or 'password' not in data:
+            return jsonify({'error': 'Email and password are required'}), 400
+
+        # Verify admin credentials
+        if data['email'] != ADMIN_EMAIL or data['password'] != ADMIN_PASSWORD:
+            return jsonify({'error': 'Invalid admin credentials'}), 401
+
+        # Generate admin token with additional security claims
+        admin_data = {
+            'id': 'admin',
+            'email': ADMIN_EMAIL,
+            'name': 'Admin',
+            'is_admin': True,
+            'role': 'admin',
+            'admin_access': True,
+            'timestamp': datetime.utcnow().timestamp()
+        }
+        
+        token = generate_token(admin_data)
+        if not token:
+            return jsonify({'error': 'Failed to generate token'}), 500
+            
+        admin_data['token'] = token
+        return jsonify(admin_data)
+        
+    except Exception as e:
+        print('Admin login error:', str(e))
         return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
 
 # ==============================================
@@ -419,7 +447,7 @@ def add_to_cart():
         print('Add to cart error:', str(e))
         return jsonify({'error': str(e)}), 400
 
-@app.route('/api/cart/update/<item_id>', methods=['POST'])
+@app.route('/api/cart/update/<item_id>', methods=['PUT'])
 def update_cart_item(item_id):
     print(f"Received update request for item {item_id}")  # Debug log
     
@@ -432,6 +460,8 @@ def update_cart_item(item_id):
         payload = verify_token(token)
         if not payload:
             return jsonify({'error': 'Invalid or expired token'}), 401
+
+        print("Token verified successfully") # Debug log
 
         # Special handling for admin user
         if payload.get('user_id') == 'admin':
@@ -462,6 +492,7 @@ def update_cart_item(item_id):
             print(f"Error parsing quantity: {str(e)}")  # Debug log
             return jsonify({'error': 'Invalid quantity value'}), 400
 
+        print("Getting cart item...") # Debug log
         # Get cart item with product details
         try:
             cart_item = supabase.table('cart_items')\
@@ -470,6 +501,7 @@ def update_cart_item(item_id):
                 .execute()
                 
             print(f"Cart item response: {cart_item.data}")  # Debug log
+            print(f"Cart item error: {cart_item.error}") # Debug log
 
             if not cart_item.data:
                 print("Cart item not found")  # Debug log
@@ -488,20 +520,26 @@ def update_cart_item(item_id):
                 return jsonify({'error': 'Not enough stock available'}), 400
 
             # Update quantity
-            response = supabase.table('cart_items')\
-                .update({'quantity': quantity})\
-                .eq('id', item_id)\
-                .execute()
-                
-            print(f"Update response: {response.data}")  # Debug log
+            try:
+                response = supabase.table('cart_items')\
+                    .update({'quantity': quantity})\
+                    .eq('id', item_id)\
+                    .execute()
+                    
+                print(f"Update response: {response.data}")  # Debug log
+                print(f"Update error: {response.error}") # Debug log
 
-            if not response.data:
+                if not response.data:
+                    return jsonify({'error': 'Failed to update cart item'}), 500
+
+                return jsonify({
+                    'message': 'Cart updated successfully',
+                    'updated_item': response.data[0]
+                })
+            except Exception as update_error:
+                print(f"Update failed: {str(update_error)}")
                 return jsonify({'error': 'Failed to update cart item'}), 500
 
-            return jsonify({
-                'message': 'Cart updated successfully',
-                'updated_item': response.data[0]
-            })
         except Exception as db_error:
             print(f"Database error: {str(db_error)}")  # Debug log
             return jsonify({'error': 'Database error occurred'}), 500

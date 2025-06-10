@@ -92,12 +92,27 @@
             color: #222 !important;
         }
         .icon-btn.theme-toggle {
-            background: #fff !important;
-            border: 2px solid #6C63FF !important;
-            color: #6C63FF !important;
+            display: none; /* Hide the old theme toggle button */
         }
-        .icon-btn.theme-toggle .theme-svg {
-            color: #6C63FF !important;
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            color: #181818;
+            font-size: 1rem;
+            padding: 0.7rem 1.2rem;
+            border-radius: 0.7rem;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .theme-toggle-btn:hover {
+            background: #f3f3ff;
+        }
+        .theme-toggle-btn .material-icons-round {
+            font-size: 1.2rem;
         }
         .cart-badge {
             position: absolute;
@@ -215,14 +230,17 @@
             font-weight: 900;
             color: #ff0000;
         }
+
         .hero-image-wrap {
             flex: 1;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: center;
             padding-right: 3.5rem;
             height: 100%;
+            transform: translate(0, -8%);
         }
+
         .hero-image {
             max-width: 45vw;
             max-height: 80vh;
@@ -605,31 +623,36 @@
         }
 
         .cart-button {
-            flex: 1;
-            padding: 1rem;
-            border: none;
-            border-radius: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .checkout-button {
+            padding: 0.6rem 1.2rem;
             background: #181818;
             color: #fff;
+            border: none;
+            border-radius: 0.3rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            min-width: 100px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        .checkout-button:hover {
+        .cart-button:hover {
             background: #333;
         }
-
         .clear-cart-button {
-            background: #f3f3f3;
-            color: #181818;
+            background: #f44336;
+            margin-right: 1rem;
+            height: 90px;
         }
-
         .clear-cart-button:hover {
-            background: #e3e3e3;
+            background: #d32f2f;
+        }
+        .checkout-button {
+            height: 90px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
         }
 
         .empty-cart {
@@ -886,12 +909,12 @@
 </head>
 <body>
     <div class="topbar">
-        Subscribe to our Newsletter For Latest Collections
+        Shop with ShopX with Xpress delivery
         <span class="material-icons-round">arrow_outward</span>
     </div>
     <nav class="navbar new-navbar">
         <div class="navbar-left">
-        <h1 class="store-name">MY STORE</h1>
+        <h1 class="store-name">ShopX</h1>
                 </div>
         <div class="navbar-right">
             <button class="icon-btn yellow" onclick="toggleCart()">
@@ -907,9 +930,6 @@
                     <button class="account-dropdown-btn" onclick="logout()">Logout</button>
                 </div>
             </div>
-            <button class="icon-btn theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">
-                <span id="themeIcon" class="theme-svg"></span>
-            </button>
         </div>
     </nav>
     <section class="hero-section" id="heroProductSection">
@@ -978,7 +998,7 @@
     </div>
 
     <script>
-        let allProducts = []; // Store all products
+        let allProducts = []; // Store all products globally
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -1138,10 +1158,33 @@
             displayProducts(filteredProducts);
         }
 
-        // Display products in grid
+        // Function to select category and filter products
+        function selectCategory(category, button) {
+            // Remove selected class from all buttons
+            document.querySelectorAll('.category-tab').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked button
+            button.classList.add('selected');
+            
+            // Filter products based on category
+            let filteredProducts = allProducts;
+            if (category !== 'all') {
+                filteredProducts = allProducts.filter(product => 
+                    product.category && product.category.toLowerCase() === category.toLowerCase()
+                );
+            }
+            
+            // Display filtered products
+            displayProducts(filteredProducts);
+        }
+
+        // Function to display products
         function displayProducts(products) {
             const productsGrid = document.getElementById('productsGrid');
             productsGrid.innerHTML = '';
+            
             if (!products || products.length === 0) {
                 productsGrid.innerHTML = `
                     <div class="no-products">
@@ -1151,10 +1194,12 @@
                 `;
                 return;
             }
+            
             products.forEach(product => {
                 let mainImg = (product.images && product.images.length) ? product.images[0] : (product.image_url || 'https://via.placeholder.com/300');
                 const fitOrCategory = product.fit || product.category || '';
                 const ratingHtml = `<div class='product-rating'>${[1,2,3,4,5].map(i => `<span class='star material-icons-round' style='color:${i<=Math.round(product.avgRating)?'#FFD600':'#ddd'}'>star</span>`).join('')} <span class='rating-number'>${product.avgRating ? product.avgRating.toFixed(1) : '0.0'} (${product.ratingCount})</span></div>`;
+                
                 const productCard = `
                     <div class="product-card" onclick="window.location.href='productpage.html?id=${product.id}'">
                         <div class="product-image">
@@ -1323,6 +1368,19 @@
                         <div class="empty-cart">
                             <span class="material-icons-round">shopping_cart</span>
                             <p>Please log in to view your cart</p>
+                                <button onclick="window.location.href='/auth/login.html'" style="
+                                    margin-top: 1rem;
+                                    padding: 0.75rem 1.5rem;
+                                    background: var(--gradient-primary);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 0.75rem;
+                                    cursor: pointer;
+                                    font-weight: 600;
+                                    transition: all 0.3s ease;
+                                ">
+                                    Login to View Cart
+                                </button>
                         </div>
                     `;
                     }
@@ -1330,6 +1388,17 @@
                     if (cartTotal) cartTotal.textContent = '₹0.00';
                     return;
                 }
+
+                // Check if token is expired
+                const tokenData = JSON.parse(atob(user.token.split('.')[1]));
+                const expirationTime = tokenData.exp * 1000; // Convert to milliseconds
+                if (Date.now() >= expirationTime) {
+                    // Token is expired, clear user data and redirect to login
+                    localStorage.removeItem('user');
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+
                 const hostname = window.location.hostname;
                 const port = window.location.port || '5000';
                 const baseUrl = `http://${hostname}:${port}`;
@@ -1342,10 +1411,19 @@
                     },
                     cache: 'no-cache'
                 });
+
+                if (response.status === 401) {
+                    // Token is invalid or expired
+                    localStorage.removeItem('user');
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Failed to fetch cart');
                 }
+
                 const cartData = await response.json();
                 if (!cartData || cartData.length === 0) {
                     if (cartItems) {
@@ -1360,6 +1438,7 @@
                     if (cartTotal) cartTotal.textContent = '₹0.00';
                     return;
                 }
+
                 let total = 0;
                 const cartHTML = cartData.map(item => {
                             const product = item.products;
@@ -1388,6 +1467,7 @@
                                 </div>
                             `;
                 }).join('');
+
                 if (cartItems) cartItems.innerHTML = cartHTML;
                 if (cartCount) cartCount.textContent = cartData.length.toString();
                 if (cartTotal) cartTotal.textContent = `₹${total.toFixed(2)}`;
@@ -1416,580 +1496,12 @@
                 }
                 if (cartCount) cartCount.textContent = '0';
                 if (cartTotal) cartTotal.textContent = '₹0.00';
-                if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
+
+                // If unauthorized, redirect to login
+                if (error.message.includes('unauthorized') || error.message.includes('Invalid or expired token')) {
                     localStorage.removeItem('user');
                     window.location.href = '/auth/login.html';
                 }
-            }
-        }
-
-        // Update removeFromCart function
-        async function removeFromCart(itemId) {
-            try {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if (!user || !user.token) {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-
-                // Get the current hostname and port
-                const hostname = window.location.hostname;
-                const port = window.location.port || '5000';
-                const baseUrl = `http://${hostname}:${port}`;
-
-                // Show loading state
-                showLoading(true);
-
-                const response = await fetch(`${baseUrl}/api/cart/remove/${itemId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`
-                    },
-                    cache: 'no-cache'
-                });
-
-                if (!response.ok) {
-                    let errorText = await response.text();
-                    let errorData;
-                    try { errorData = JSON.parse(errorText); } catch { errorData = { message: errorText }; }
-                    console.error('API error response:', errorData);
-                    throw new Error(errorData.message || errorText || 'Failed to remove item');
-                }
-
-                // Update cart display
-                await updateCart();
-                showNotification('Item removed from cart', 'success');
-
-                // Close cart if empty
-                const cartItems = document.getElementById('cartItems');
-                if (cartItems && cartItems.children.length === 0) {
-                    toggleCart();
-                }
-
-            } catch (error) {
-                console.error('Error removing item:', error);
-                if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
-                    localStorage.removeItem('user');
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                showNotification('Failed to remove item. Please try again.', 'error');
-                
-                // Add retry button to notification
-                const notification = document.querySelector('.notification');
-                if (notification) {
-                    const retryButton = document.createElement('button');
-                    retryButton.textContent = 'Retry';
-                    retryButton.style.cssText = `
-                        margin-left: 10px;
-                        padding: 4px 8px;
-                        background: var(--gradient-primary);
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    `;
-                    retryButton.onclick = () => removeFromCart(itemId);
-                    notification.querySelector('.notification-content').appendChild(retryButton);
-                }
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Update updateQuantity function
-        async function updateQuantity(itemId, newQuantity) {
-            try {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if (!user || !user.token) {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-
-                if (newQuantity < 1) {
-                    await removeFromCart(itemId);
-                    return;
-                }
-
-                // Get the current hostname and port
-                const hostname = window.location.hostname;
-                const port = window.location.port || '5000';
-                const baseUrl = `http://${hostname}:${port}`;
-
-                // Show loading state
-                showLoading(true);
-
-                const response = await fetch(`${baseUrl}/api/cart/update/${itemId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`
-                    },
-                    body: JSON.stringify({ quantity: newQuantity }),
-                    cache: 'no-cache'
-                });
-
-                if (!response.ok) {
-                    let errorText = await response.text();
-                    let errorData;
-                    try { errorData = JSON.parse(errorText); } catch { errorData = { message: errorText }; }
-                    console.error('API error response:', errorData);
-                    throw new Error(errorData.message || errorText || 'Failed to update quantity');
-                }
-
-                // Update cart display
-                await updateCart();
-                showNotification('Cart updated successfully', 'success');
-            } catch (error) {
-                console.error('Error updating quantity:', error);
-                if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
-                    localStorage.removeItem('user');
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                showNotification('Failed to update quantity. Please try again.', 'error');
-                
-                // Add retry button to notification
-                const notification = document.querySelector('.notification');
-                if (notification) {
-                    const retryButton = document.createElement('button');
-                    retryButton.textContent = 'Retry';
-                    retryButton.style.cssText = `
-                        margin-left: 10px;
-                        padding: 4px 8px;
-                        background: var(--gradient-primary);
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    `;
-                    retryButton.onclick = () => updateQuantity(itemId, newQuantity);
-                    notification.querySelector('.notification-content').appendChild(retryButton);
-                }
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Update checkout function
-        async function checkout() {
-            try {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if (!user || !user.token) {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-
-                // Get the current hostname and port
-                const hostname = window.location.hostname;
-                const port = window.location.port || '5000';
-                const baseUrl = `http://${hostname}:${port}`;
-
-                // Get cart items with authentication
-                const response = await fetch(`${baseUrl}/api/cart`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`
-                    },
-                    cache: 'no-cache'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch cart items');
-                }
-
-                const cartItems = await response.json();
-                
-                if (!cartItems || cartItems.length === 0) {
-                    showNotification('Your cart is empty!', 'error');
-                    return;
-                }
-
-                // Calculate total
-                const total = cartItems.reduce((sum, item) => {
-                    const itemPrice = item.products ? item.products.price : 0;
-                    return sum + (itemPrice * item.quantity);
-                }, 0);
-
-                // Save checkout data
-                const checkoutData = {
-                    items: cartItems,
-                    total: total,
-                    user: {
-                        id: user.id,
-                        email: user.email,
-                        token: user.token
-                    }
-                };
-                
-                localStorage.setItem('checkout_data', JSON.stringify(checkoutData));
-
-                // Show loading notification
-                showNotification('Preparing checkout...', 'success');
-
-                // Add a small delay to ensure data is saved
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // Redirect to billing page
-                window.location.href = 'billing.html';
-            } catch (error) {
-                console.error('Error processing checkout:', error);
-                showNotification('Failed to process checkout. Please try again.', 'error');
-                
-                // Add retry button to notification
-                const notification = document.querySelector('.notification');
-                if (notification) {
-                    const retryButton = document.createElement('button');
-                    retryButton.textContent = 'Retry';
-                    retryButton.style.cssText = `
-                        margin-left: 10px;
-                        padding: 4px 8px;
-                        background: var(--gradient-primary);
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    `;
-                    retryButton.onclick = () => checkout();
-                    notification.querySelector('.notification-content').appendChild(retryButton);
-                }
-            }
-        }
-
-        // Toggle profile dropdown
-        function toggleProfileMenu() {
-            document.getElementById('profileDropdown').classList.toggle('active');
-        }
-
-        // Logout functionality
-        function logout() {
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        }
-
-        // Theme toggle functionality
-        function toggleTheme() {
-            window.themeManager.toggleTheme();
-            const btn = document.getElementById('themeToggleBtn');
-            if (btn) {
-                btn.classList.add('rotating');
-                setTimeout(() => btn.classList.remove('rotating'), 500);
-            }
-            setTimeout(setThemeIcon, 250);
-        }
-
-        function setThemeIcon() {
-            const icon = document.getElementById('themeIcon');
-            if (!icon) return;
-            if (document.documentElement.getAttribute('data-theme') === 'dark') {
-                icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>`;
-            } else {
-                icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#FFD600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><g><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g></svg>`;
-            }
-        }
-
-        // Update selectCategory function to work with the new category tabs
-        function selectCategory(category, button) {
-            // Update selected state of buttons
-            document.querySelectorAll('.category-tab').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            button.classList.add('selected');
-
-            // Filter products
-            let filteredProducts = category === 'all' 
-                ? allProducts 
-                : allProducts.filter(product => product.category === category);
-            
-            displayProducts(filteredProducts);
-        }
-
-        // Add network status check
-        function checkNetworkStatus() {
-            if (!navigator.onLine) {
-                showNotification('You are offline. Please check your internet connection.', 'error');
-                return false;
-                }
-            return true;
-        }
-
-        // Update showLoading function
-        function showLoading(show) {
-            const loader = document.getElementById('loadingSpinner');
-            if (loader) {
-                if (show) {
-                    loader.classList.add('active');
-                    loader.style.display = 'flex';
-                } else {
-                    loader.classList.remove('active');
-                    setTimeout(() => {
-                        loader.style.display = 'none';
-                    }, 300);
-                    }
-            }
-        }
-
-        // Add a function to check if checkout data is valid
-        function validateCheckoutData() {
-            try {
-                const checkoutData = JSON.parse(localStorage.getItem('checkout_data'));
-                if (!checkoutData || !checkoutData.items || !checkoutData.total) {
-                    return false;
-                }
-                return true;
-            } catch (error) {
-                return false;
-            }
-        }
-
-        // Add event listener for page visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                // Refresh cart when page becomes visible again
-                updateCart();
-            }
-        });
-
-        // Add event listener for beforeunload
-        window.addEventListener('beforeunload', () => {
-            // Save current cart state
-            const cartItems = document.getElementById('cartItems');
-            if (cartItems) {
-                localStorage.setItem('lastCartState', cartItems.innerHTML);
-            }
-        });
-    </script>
-
-    <script>
-        // Function to check login status
-        function checkLoginStatus() {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (user && user.token) {
-                document.getElementById('userName').textContent = user.name || 'User';
-                return true;
-            }
-            return false;
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check login status
-            if (!checkLoginStatus()) {
-                // If there's a pending cart action, save current page
-                const pendingAction = localStorage.getItem('pendingCartAction');
-                if (pendingAction) {
-                    localStorage.setItem('redirectAfterLogin', window.location.href);
-                }
-            }
-
-            // Load products
-            loadProducts();
-        });
-    </script>
-
-    <script>
-    // --- Notification Toast ---
-    function showNotification(message, type = 'success') {
-        // Remove any existing notification
-        const existing = document.querySelector('.notification');
-        if (existing) existing.remove();
-        // Create notification
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="material-icons-round">${type === 'success' ? 'check_circle' : 'error_outline'}</span>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 50);
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 400);
-        }, 2500);
-    }
-    </script>
-
-    <script>
-        function showProductDetails(productId) {
-            // Remove any existing modal first
-            const existingModal = document.querySelector('.modal-overlay');
-            if (existingModal) {
-                existingModal.remove();
-            }
-
-            // Create modal overlay
-            const modal = document.createElement('div');
-            modal.className = 'modal-overlay';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <button class="modal-close" onclick="closeModal(this)">
-                        <span class="material-icons-round">close</span>
-                    </button>
-                    <div class="product-details-container">
-                        <div class="loading-spinner active">
-                            <div class="spinner"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            
-            // Force a reflow before adding active class
-            modal.offsetHeight;
-            
-            // Add active class to trigger animation
-            requestAnimationFrame(() => {
-                modal.classList.add('active');
-            });
-
-            // Load product details
-            loadProductDetails(productId, modal);
-
-            // Close on outside click
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal(modal.querySelector('.modal-close'));
-                }
-            });
-
-            // Close on escape key
-            const escapeHandler = (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('active')) {
-                    closeModal(modal.querySelector('.modal-close'));
-                    document.removeEventListener('keydown', escapeHandler);
-                }
-            };
-            document.addEventListener('keydown', escapeHandler);
-        }
-
-        async function loadProductDetails(productId, modal) {
-            try {
-                const hostname = window.location.hostname;
-                const port = window.location.port || '5000';
-                const baseUrl = `http://${hostname}:${port}`;
-
-                const response = await fetch(`${baseUrl}/api/products/${productId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to load product details');
-                }
-
-                const product = await response.json();
-                const container = modal.querySelector('.product-details-container');
-
-                // Mock data for thumbnails, colors, reviews
-                const thumbnails = (product.images && product.images.length) ? product.images : [product.image_url || 'https://via.placeholder.com/500'];
-                const colors = product.colors || ['#e5e5e5', '#b0a99f', '#7d6e63'];
-                const reviews = [
-                    { rating: 5, text: 'Great product, exactly as described!', user: 'Deepak', date: '2 days ago' },
-                    { rating: 4, text: 'Very comfortable and stylish.', user: 'Amit', date: '1 week ago' }
-                ];
-                const avgRating = 4.5;
-                const totalReviews = 52;
-                const ratingBreakdown = [35, 10, 5, 2, 0]; // 5 to 1 stars
-
-                container.innerHTML = `
-                <div class="product-modal-card">
-                    <div class="product-modal-left">
-                        <div class="product-modal-thumbnails">
-                            ${thumbnails.map((img, i) => `<img src="${img}" alt="thumb" class="product-modal-thumb${i===0?' selected':''}" onclick="document.getElementById('mainProductImg').src='${img}';document.querySelectorAll('.product-modal-thumb').forEach((t,idx)=>t.classList.toggle('selected',idx===${i}));">`).join('')}
-                        </div>
-                        <div class="product-modal-mainimg-box">
-                            <img id="mainProductImg" class="product-modal-mainimg" src="${thumbnails[0]}" alt="${product.name}">
-                        </div>
-                    </div>
-                    <div class="product-modal-right">
-                        <div class="product-modal-title">${product.name ? product.name.toUpperCase() : ''}</div>
-                        <div class="product-modal-price">₹${product.price}</div>
-                        <div class="product-modal-desc">${product.description || ''}</div>
-                        <hr class="product-modal-divider" />
-                        <div class="product-modal-stock">Stock<br>${product.stock !== undefined ? product.stock : ''}</div>
-                        <div class="product-modal-qty-row">
-                            <button class="product-modal-qty-btn" onclick="changeProductQty(-1)">-</button>
-                            <span class="product-modal-qty-value" id="qtyValue">1</span>
-                            <button class="product-modal-qty-btn" onclick="changeProductQty(1)">+</button>
-                        </div>
-                        <button class="product-modal-addcart" onclick="addToCartWithQty('${product.id}', event)">
-                            <span class="material-icons-round">shopping_cart</span>
-                            Add to Cart
-                        </button>
-                    </div>
-                </div>
-                `;
-            } catch (error) {
-                console.error('Error loading product details:', error);
-                const container = modal.querySelector('.product-details-container');
-                container.innerHTML = `
-                    <div class="error-message">
-                        <span class="material-icons-round">error_outline</span>
-                        <p>Failed to load product details. Please try again.</p>
-                        <button onclick="loadProductDetails('${productId}', this.closest('.modal-overlay'))">
-                            Retry
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        function closeModal(button) {
-            const modal = button.closest('.modal-overlay');
-            if (!modal) return;
-            
-            modal.classList.remove('active');
-            
-            // Remove modal after animation
-            setTimeout(() => {
-                if (modal && modal.parentNode) {
-                    modal.remove();
-                }
-            }, 300);
-        }
-    </script>
-
-    <script>
-        async function clearCart() {
-            try {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if (!user || !user.token) {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                const hostname = window.location.hostname;
-                const port = window.location.port || '5000';
-                const baseUrl = `http://${hostname}:${port}`;
-                showLoading(true);
-                const response = await fetch(`${baseUrl}/api/cart/clear`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`
-                    },
-                    cache: 'no-cache'
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to clear cart');
-                }
-                await updateCart();
-                showNotification('Cart cleared!', 'success');
-            } catch (error) {
-                console.error('Error clearing cart:', error);
-                showNotification('Failed to clear cart. Please try again.', 'error');
-            } finally {
-                showLoading(false);
             }
         }
     </script>
@@ -2162,18 +1674,35 @@
 
     <script>
         // Initialize Lottie animation
-        const animation = lottie.loadAnimation({
+        let animation;
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                animation = lottie.loadAnimation({
             container: document.getElementById('addToCartAnimation'),
             renderer: 'svg',
             loop: false,
             autoplay: false,
             path: '../assets/addtocart.json'
+                });
+
+                // Add error handling for animation loading
+                animation.addEventListener('error', (error) => {
+                    console.error('Animation loading error:', error);
+                    showNotification('Failed to load animation', 'error');
+                });
+            } catch (error) {
+                console.error('Error initializing animation:', error);
+            }
         });
 
         // Function to show animation
         function showAddToCartAnimation() {
             const overlay = document.querySelector('.animation-overlay');
+            if (!overlay) return;
+
             overlay.classList.add('active');
+            
+            if (animation) {
             animation.goToAndPlay(0);
             
             // Hide overlay after animation completes
@@ -2182,39 +1711,11 @@
                     overlay.classList.remove('active');
                 }, 500);
             });
-        }
-
-        // Update the addToCart function
-        async function addToCart(productId) {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const response = await fetch('/api/cart/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        product_id: productId,
-                        quantity: 1
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    showAddToCartAnimation();
-                    updateCartCount();
                 } else {
-                    alert(data.error || 'Failed to add to cart');
-                }
-            } catch (error) {
-                console.error('Error adding to cart:', error);
-                alert('Failed to add to cart');
+                // Fallback if animation fails to load
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 1000);
             }
         }
     </script>
@@ -2266,6 +1767,324 @@
             showLoading(false);
         }
     }
+    </script>
+
+    <script>
+        // --- Loading Spinner ---
+        function showLoading(show) {
+            const loader = document.getElementById('loadingSpinner');
+            if (loader) {
+                if (show) {
+                    loader.classList.add('active');
+                    loader.style.display = 'flex';
+                } else {
+                    loader.classList.remove('active');
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 300);
+                }
+            }
+        }
+
+        // --- Notification Toast ---
+        function showNotification(message, type = 'success') {
+            // Remove any existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            // Create notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <span class="material-icons-round">${type === 'success' ? 'check_circle' : 'error_outline'}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            // Add show class after a small delay for animation
+            setTimeout(() => notification.classList.add('show'), 50);
+
+            // Remove notification after delay
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 400);
+            }, 2500);
+        }
+
+        // Add notification styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                transform: translateX(120%);
+                transition: transform 0.3s ease;
+            }
+            .notification.show {
+                transform: translateX(0);
+            }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+            .notification.success {
+                border-left: 4px solid #4CAF50;
+            }
+            .notification.error {
+                border-left: 4px solid #f44336;
+            }
+            .notification .material-icons-round {
+                font-size: 1.5rem;
+            }
+            .notification.success .material-icons-round {
+                color: #4CAF50;
+            }
+            .notification.error .material-icons-round {
+                color: #f44336;
+            }
+            .loading-spinner {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.8);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+            .loading-spinner.active {
+                display: flex;
+            }
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #3498db;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+    <script>
+        // Global cart management functions
+        window.updateQuantity = async function(cartItemId, newQuantity) {
+            try {
+                if (newQuantity < 1) {
+                    await window.removeFromCart(cartItemId);
+                    return;
+                }
+
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user || !user.token) {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+
+                const hostname = window.location.hostname;
+                const port = window.location.port || '5000';
+                const baseUrl = `http://${hostname}:${port}`;
+
+                console.log('Updating cart item:', cartItemId, 'to quantity:', newQuantity);
+
+                const response = await fetch(`${baseUrl}/api/cart/update/${cartItemId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`
+                    },
+                    body: JSON.stringify({
+                        quantity: newQuantity
+                    }),
+                    cache: 'no-cache'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update quantity');
+                }
+
+                // Update cart display
+                await updateCart();
+
+            } catch (error) {
+                console.error('Error updating quantity:', error);
+                if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                showNotification('Failed to update quantity. Please try again.', 'error');
+            }
+        };
+
+        window.removeFromCart = async function(cartItemId) {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user || !user.token) {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+
+                const hostname = window.location.hostname;
+                const port = window.location.port || '5000';
+                const baseUrl = `http://${hostname}:${port}`;
+
+                // Log the request details for debugging
+                console.log('Removing cart item:', {
+                    cartItemId,
+                    url: `${baseUrl}/api/cart/remove`,
+                    token: user.token.substring(0, 10) + '...'
+                });
+
+                const response = await fetch(`${baseUrl}/api/cart/remove/${cartItemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`
+                    },
+                    cache: 'no-cache'
+                });
+
+                // Log the response status
+                console.log('Remove cart response status:', response.status);
+
+                if (!response.ok) {
+                    let errorMessage = 'Failed to remove item';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                        console.error('Server error details:', errorData);
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                // Update cart display
+                await updateCart();
+                showNotification('Item removed from cart', 'success');
+
+            } catch (error) {
+                console.error('Error removing item:', error);
+                if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                showNotification('Failed to remove item. Please try again.', 'error');
+            }
+        };
+
+        window.clearCart = async function() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user || !user.token) {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+
+                const hostname = window.location.hostname;
+                const port = window.location.port || '5000';
+                const baseUrl = `http://${hostname}:${port}`;
+
+                const response = await fetch(`${baseUrl}/api/cart/clear`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`
+                    },
+                    cache: 'no-cache'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to clear cart');
+                }
+
+                // Update cart display
+                await updateCart();
+                showNotification('Cart cleared successfully', 'success');
+
+            } catch (error) {
+                console.error('Error clearing cart:', error);
+                if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                showNotification('Failed to clear cart. Please try again.', 'error');
+            }
+        };
+    </script>
+
+    <script>
+        // Add a global checkout function for the checkout button
+        window.checkout = async function() {
+            // Fetch the latest cart data from your backend
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.token) {
+                window.location.href = '/auth/login.html';
+                return;
+            }
+            const hostname = window.location.hostname;
+            const port = window.location.port || '5000';
+            const baseUrl = `http://${hostname}:${port}`;
+            const response = await fetch(`${baseUrl}/api/cart`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                cache: 'no-cache'
+            });
+            if (!response.ok) {
+                alert('Failed to fetch cart data');
+                return;
+            }
+            const cartData = await response.json();
+            // Calculate total
+            let total = 0;
+            cartData.forEach(item => {
+                total += (item.products.price || 0) * item.quantity;
+            });
+            // Save to localStorage in the format billing.html expects
+            localStorage.setItem('checkout_data', JSON.stringify({
+                items: cartData,
+                total: total
+            }));
+            // Redirect to billing page
+            window.location.href = 'billing.html';
+        };
+    </script>
+
+    <script>
+        // Add a global logout function for the logout button
+        window.logout = function() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('checkout_data');
+            window.location.href = '/auth/login.html';
+        };
     </script>
 </body>
 </html> 

@@ -367,7 +367,7 @@
             z-index: 5;
         }
 
-        .theme-switch {
+        .theme-toggle-btn {
             position: fixed;
             top: 1rem;
             right: 1rem;
@@ -384,38 +384,19 @@
             transition: all 0.3s ease;
         }
 
-        .theme-switch:hover {
+        .theme-toggle-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 24px var(--shadow);
         }
 
-        .theme-switch .material-icons-round {
+        .theme-toggle-btn .material-icons-round {
             font-size: 1.25rem;
             color: var(--text-primary);
         }
 
-        .switch-track {
-            width: 40px;
-            height: 20px;
-            background: var(--accent);
-            border-radius: 20px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .switch-thumb {
-            width: 16px;
-            height: 16px;
-            background: var(--bg-primary);
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: all 0.3s ease;
-        }
-
-        [data-theme="dark"] .switch-thumb {
-            transform: translateX(20px);
+        .theme-toggle-btn span {
+            font-size: 0.875rem;
+            font-weight: 500;
         }
 
         .user-info {
@@ -720,7 +701,7 @@
                 font-size: 0.75rem;
             }
 
-            .theme-switch {
+            .theme-toggle-btn {
                 top: 0.5rem;
                 right: 0.5rem;
                 padding: 0.25rem;
@@ -777,13 +758,10 @@
         <div class="shape shape-3"></div>
     </div>
 
-    <div class="theme-switch" onclick="toggleTheme()">
-        <span class="material-icons-round">light_mode</span>
-        <div class="switch-track">
-            <div class="switch-thumb"></div>
-        </div>
-        <span class="material-icons-round">dark_mode</span>
-    </div>
+    <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn">
+        <span class="material-icons-round" id="themeIcon">light_mode</span>
+        <span id="themeText">Light Mode</span>
+    </button>
 
     <div class="user-info">
         <span id="userName"></span>
@@ -871,7 +849,7 @@
                                 <span>₹2,999</span>
                             </div>
                             <div class="scroll-item">
-                                <img src=https://m.media-amazon.com/images/I/41zAxeeScDL._BO30,255,255,255_UF900,850_SR1910,1000,0,C_QL100_.jpg" alt="Hoodie">
+                                <img src="https://m.media-amazon.com/images/I/41zAxeeScDL._BO30,255,255,255_UF900,850_SR1910,1000,0,C_QL100_.jpg" alt="Hoodie">
                                 <p>Nike Hoodie</p>
                                 <span>₹1,999</span>
                             </div>
