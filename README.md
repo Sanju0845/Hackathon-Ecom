@@ -29,4 +29,4 @@ A web-based e-commerce platform built with Python and HTML/CSS/JavaScript.
 - `users.json` - User database
 - `assets/` - Static assets
 - `admin/` - Admin dashboard
-- `auth/` - Authentication related files 
+- `auth/` - Authentication related files "# Vercel-ecom-hackathon-" 
